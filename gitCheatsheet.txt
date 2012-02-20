@@ -1,0 +1,35 @@
+#initial
+mkdir GitTest
+cd GitTest
+git init
+<add/change files>
+git add -A
+git commit -m 'Init commit'
+git remote add origin git@github.com:fhxalgo/GitTest.git
+git push origin master
+
+#existing repo
+git clone git@github.com:fhxalgo/GitTest.git
+cd GitTest
+<add/change files>
+git diff
+git add -A
+git commit -m "2nd commit"
+git push origin master
+
+#status
+git branch
+git status
+
+#merge changes
+git status <= diff local and remote changest
+git fetch <= pulls latest changes from remote into local repo
+git diff master origin/master
+git merge origin/master
+git checkout <file> <= discard local changes
+
+#restore local deleted files
+git ls-files -d
+git ls-files -d | xargs git checkout --
+
+#random line
