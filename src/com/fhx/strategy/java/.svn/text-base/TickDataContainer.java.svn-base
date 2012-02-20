@@ -1,0 +1,116 @@
+package com.fhx.strategy.java;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.TreeMap;
+
+import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
+import org.marketcetera.marketdata.interactivebrokers.LatestMarketData;
+
+import com.fhx.statstream.StatStreamRealtimeService;
+import com.fhx.statstream.StatStreamServiceBase;
+
+/*
+ * Singleton class that hold one sliding window worth of data across all symbols
+ * When the container is full, the data is served to the StatStreamProto
+ */
+public class TickDataContainer {
+	
+	private TickDataContainer() {}
+	
+	private static Logger log = Logger.getLogger(StatStreamServiceBase.class);
+	private static TickDataContainer tc = new TickDataContainer();
+	
+	private int count = 0;
+	private int basicWindowCnt = 0;
+	private int basicWindowSize = -1;
+	private final Properties config = new Properties();
+	private static StatStreamRealtimeService ssService = new StatStreamRealtimeService();
+	
+	public static TickDataContainer getInstance() {
+		if(tc==null) {
+			tc = new TickDataContainer();
+		}
+		
+		return tc;
+	}
+	
+	/*
+	 * Use TreeMap to guarantee ordering
+	 * Example:
+	 * 	IBM -> [LatestMarketData1, LatestMarketData2, LatestMarketData3, ... ] 
+	 */
+	private Map<String, List<LatestMarketData>> basicWindowTicks = new TreeMap<String, List<LatestMarketData>>();
+	
+	public void init() {
+		try {
+			PropertyConfigurator.configure("conf/log4j.properties");		
+		
+			config.load(this.getClass().getClassLoader().getResourceAsStream("conf/statstream.properties"));
+			
+			String basicWin = config.getProperty("BASIC_WINDOW_SIZE");
+			if(basicWin== null) {
+				log.error("Must define basic window size");
+			}
+			basicWindowSize = Integer.parseInt(basicWin);
+			
+		} catch (Exception e1) {
+			System.out.format("ERROR HERE\n");
+			log.error("Error loading config file\n");
+			e1.printStackTrace();
+			return;
+		}	
+	}
+	
+	public void flushBasicWindow() {
+		System.out.println("Serving basic window # " + basicWindowCnt + " to the StatStream model" );
+		
+		/*
+		 * format basic window data and serve it to StatStream model
+		 */
+		ssService.tick(basicWindowTicks);
+		
+		log.info("Flushing basic window " + basicWindowCnt + ", invoking StatStreamService");
+		basicWindowCnt++;
+		basicWindowTicks.clear();
+	}
+	
+	public void addATick(Map<String, LatestMarketData> aTick) {
+		String symbol = "";
+		LatestMarketData data;
+		
+		System.out.format("ZZZZZ: here\n");
+		
+		for(Map.Entry<String, LatestMarketData> tick : aTick.entrySet()) {
+			symbol = tick.getKey();
+			data = tick.getValue();
+			
+			List<LatestMarketData> ticksPerSymbol = basicWindowTicks.get(symbol);
+			if(ticksPerSymbol==null) {
+				ticksPerSymbol = new ArrayList<LatestMarketData>();
+				ticksPerSymbol.add(data);
+				basicWindowTicks.put(symbol, ticksPerSymbol);
+			}
+			else {
+				ticksPerSymbol.add(data);
+			}
+		}
+		
+		log.info("XXXX tick count: " + count++ + "\n");
+		
+		System.out.format("Size of basicWindowTicks Map = %d\n ", basicWindowTicks.get(symbol).size());
+		
+		if(basicWindowTicks.size() >= basicWindowSize)			
+			flushBasicWindow();
+	}
+	
+	public Map<String, List<LatestMarketData>> getBasicWindowTicks() {
+		// client should not be able to get access to modify the data
+		return Collections.unmodifiableMap(basicWindowTicks);
+	}
+
+}
