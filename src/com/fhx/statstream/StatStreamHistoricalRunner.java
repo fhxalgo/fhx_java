@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -45,7 +46,9 @@ public class StatStreamHistoricalRunner extends StatStreamServiceBase {
 
 	private int basicWindowCnt = 1;
 	private int basicWindowSize = -1;
-	private int bwNum = 0;
+	private int bwNum = -1;
+	private int mktOpenHr,mktOpenMin,mktOpenSec,mktClsHr,mktClsMin,mktClsSec;
+	private Date mktOpenTime, mktCloseTime;
 	private final Properties config = new Properties();
 	private static StatStreamHistoricalService ssService = new StatStreamHistoricalService();
 
@@ -58,6 +61,7 @@ public class StatStreamHistoricalRunner extends StatStreamServiceBase {
 	 */
 	private Map<String, List<LatestMarketData>> basicWindowTicks = new TreeMap<String, List<LatestMarketData>>();
 
+	@SuppressWarnings("deprecation")
 	public StatStreamHistoricalRunner() {
 		try {
 			ssService.init();
@@ -66,11 +70,25 @@ public class StatStreamHistoricalRunner extends StatStreamServiceBase {
 
 			config.load(new FileInputStream("conf/statstream.properties"));
 
-			String basicWin = config.getProperty("BASIC_WINDOW_SIZE");
-			if (basicWin == null) {
-				log.error("Must define basic window size");
-			}
-			basicWindowSize = Integer.parseInt(basicWin);
+			basicWindowSize = Integer.parseInt(config.getProperty("BASIC_WINDOW_SIZE","32"));
+			
+			String runDateStr = config.getProperty("RUN_DATE","2012-02-17");
+			SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+			Date runDate = (Date)formatter.parse(runDateStr);  
+			
+			mktOpenHr = Integer.parseInt(config.getProperty("MKT_OPEN_HR","9"));
+			mktOpenMin = Integer.parseInt(config.getProperty("MKT_OPEN_MIN","30"));
+			mktOpenSec = Integer.parseInt(config.getProperty("MKT_OPEN_SEC","0"));
+			mktClsHr = Integer.parseInt(config.getProperty("MKT_CLOSE_HR","16"));
+			mktClsMin = Integer.parseInt(config.getProperty("MKT_CLOSE_MIN","0"));
+			mktClsSec = Integer.parseInt(config.getProperty("MKT_CLOSE_SEC","0"));
+			
+			mktOpenTime = new Date(runDate.getYear(), runDate.getMonth(), runDate.getDate(), 
+								   mktOpenHr, mktOpenMin, mktOpenSec);
+			mktCloseTime = new Date(runDate.getYear(), runDate.getMonth(), runDate.getDate(), 
+					   				mktClsHr, mktClsMin, mktClsSec);
+			
+			log.info("Setting market period between " + mktOpenTime.toString() + " and " + mktCloseTime.toString());
 			
 		} catch (Exception e1) {
 			System.out.format("ERROR HERE\n");
@@ -118,11 +136,15 @@ public class StatStreamHistoricalRunner extends StatStreamServiceBase {
 	public void gatherAllHistTicks() {
 		String dataDir = config.getProperty("TICKDATA_DIR");
 		if (dataDir == null) {
-			dataDir = "/export/data/statstream/";
+			dataDir = "/export/data/";
 		}
 
-		getAllSymbols();
-
+		//getAllSymbols();
+		symbols.add("AAPL");
+		symbols.add("HPQ");
+		symbols.add("INTC");
+		symbols.add("XLK");
+		
 		Iterator<String> iter = symbols.iterator();
 		while (iter.hasNext()) {
 			String symbol = (String) iter.next();
@@ -138,14 +160,14 @@ public class StatStreamHistoricalRunner extends StatStreamServiceBase {
 		}
 	}
 
-	private List<LatestMarketData> readTicksFromFile(String dataDir,
-			String symbol) {
+	private List<LatestMarketData> readTicksFromFile(String dataDir, String symbol) {
 		List<LatestMarketData> tickStream = new ArrayList<LatestMarketData>();
 		StringTokenizer st;
-		BigDecimal bid, ask;
-		Date latestTime;
 
-		String fileName = dataDir + "_Tick_5Min.csv";
+		final SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");	
+		String fileName = dataDir + symbol + "_20120217_tick.csv";
+		
+		log.info("Loading tick data file " + fileName);
 
 		FileReader fileReader;
 		try {
@@ -160,21 +182,33 @@ public class StatStreamHistoricalRunner extends StatStreamServiceBase {
 			while ((line = bufferedReader.readLine()) != null) {
 				st = new StringTokenizer(line, ",");
 
-				// TODO: string tokenize
-
 				LatestMarketData lmd = new LatestMarketData(symbol);
-				lmd.setBidPrice(new BigDecimal(0.0));
-				lmd.setOfferPrice(new BigDecimal(0.0));
-				lmd.setTime(new Date());
+
+				st.nextToken(); //symbol
+				lmd.setBidPrice(new BigDecimal(Double.parseDouble(st.nextToken())));  //bid
+				lmd.setOfferPrice(new BigDecimal(Double.parseDouble(st.nextToken())));//ask
+				st.nextToken(); //trade price
+				st.nextToken(); //trade size
+				
+				Date time = SDF.parse(st.nextToken());
+				if(time.before(mktOpenTime) || time.after(mktCloseTime))
+					continue;
+				
+				lmd.setTime(time);   //source time
+
 				tickStream.add(lmd);
 			}
 
 			bufferedReader.close();
+			fileReader.close();
 
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -266,6 +300,7 @@ public class StatStreamHistoricalRunner extends StatStreamServiceBase {
 				symbol = entry.getKey();
 				val = entry.getValue();
 				
+				log.info(symbol+"|");
 				bwList.put(symbol, new REXPDouble(ArrayUtils.toPrimitive(val.toArray(new Double[val.size()]))));
 			}			
 			
@@ -301,13 +336,14 @@ public class StatStreamHistoricalRunner extends StatStreamServiceBase {
 			// make sure all global variables that func needs exist
 			REXP cmd_ls_vars, streamDataTest, chopChunk, bwDat;
 
-			cmd_ls_vars = conn.parseAndEval("ls()");
+			/*cmd_ls_vars = conn.parseAndEval("ls()");
 			streamDataTest = conn.parseAndEval("streamData");
 			chopChunk = conn.parseAndEval("chopChunk");
 
 			log.info("cmd_ls_vars(debug): " + cmd_ls_vars.toDebugString());
 			log.info("streamData(debug): " + streamDataTest.toDebugString());
 			log.info("chopChunk(debug): " + chopChunk.toDebugString());
+			*/
 			
 			// String corrFunc = "corr_report <- process_sliding_window2(1)";
 			String corrFunc = "corr_report <- process_basic_window3(streamData)";

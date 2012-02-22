@@ -58,8 +58,8 @@ public class StatStreamUtil {
 	 */
 	public static boolean launchRserve(String cmd, String rargs, String rsrvargs, boolean debug) {
 		try {
-			
 			debug = true;
+			
 			Process p;
 			boolean isWindows = false;
 			String osname = System.getProperty("os.name");
