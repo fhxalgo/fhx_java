@@ -51,7 +51,8 @@ public class StatStreamHistoricalRunner extends StatStreamServiceBase {
 	private Date mktOpenTime, mktCloseTime;
 	private final Properties config = new Properties();
 	private static StatStreamHistoricalService ssService = new StatStreamHistoricalService();
-
+	private static StatStreamHistoricalRunner runner = new StatStreamHistoricalRunner();
+	
 	private Hashtable<String, List<LatestMarketData>> tickDataCache = new Hashtable<String, List<LatestMarketData>>();
 	private Set<String> symbols = new TreeSet<String>();
 	
@@ -62,7 +63,7 @@ public class StatStreamHistoricalRunner extends StatStreamServiceBase {
 	private Map<String, List<LatestMarketData>> basicWindowTicks = new TreeMap<String, List<LatestMarketData>>();
 
 	@SuppressWarnings("deprecation")
-	public StatStreamHistoricalRunner() {
+	private StatStreamHistoricalRunner() {	
 		try {
 			ssService.init();
 
@@ -96,6 +97,13 @@ public class StatStreamHistoricalRunner extends StatStreamServiceBase {
 			e1.printStackTrace();
 			System.exit(1);
 		}
+	}
+	
+	public static StatStreamHistoricalRunner getInstance() {
+		if(runner != null) 
+			return runner;
+		else 
+			return new StatStreamHistoricalRunner();
 	}
 
 	private void getAllSymbols() {
@@ -300,7 +308,7 @@ public class StatStreamHistoricalRunner extends StatStreamServiceBase {
 				symbol = entry.getKey();
 				val = entry.getValue();
 				
-				log.info(symbol+"|");
+				log.info(symbol);
 				bwList.put(symbol, new REXPDouble(ArrayUtils.toPrimitive(val.toArray(new Double[val.size()]))));
 			}			
 			
@@ -313,7 +321,7 @@ public class StatStreamHistoricalRunner extends StatStreamServiceBase {
 					val = (List<Double>) iter.next().getValue();
 					sb.append(val.get(i)+"|");
 				}
-				log.info(sb.toString());
+				log.debug(sb.toString());
 			}	
 		
 		} catch (Exception e) {
@@ -338,25 +346,24 @@ public class StatStreamHistoricalRunner extends StatStreamServiceBase {
 
 			/*cmd_ls_vars = conn.parseAndEval("ls()");
 			streamDataTest = conn.parseAndEval("streamData");
-			chopChunk = conn.parseAndEval("chopChunk");
 
 			log.info("cmd_ls_vars(debug): " + cmd_ls_vars.toDebugString());
 			log.info("streamData(debug): " + streamDataTest.toDebugString());
-			log.info("chopChunk(debug): " + chopChunk.toDebugString());
+			log.info(conn.eval("paste(capture.output(print(chopChunk)),collapse='\\n')").asString());
 			*/
 			
-			// String corrFunc = "corr_report <- process_sliding_window2(1)";
+			//String s=conn.eval("paste(capture.output(" + "corr_report <- process_basic_window3(streamData)" + ")),collapse='\\n')").asString();
+			//System.out.println(s);
+			
 			String corrFunc = "corr_report <- process_basic_window3(streamData)";
 			
-			int m = conn.parseAndEval(corrFunc).asInteger();
-
-			log.info("return from process_basic_window call = " + m);	
-	
-			chopChunk = conn.parseAndEval("chopChunk");
-			log.info("chopChunk(debug): " + chopChunk.toDebugString());
+			log.info("calling process_basic_window");	
 			
-			bwDat = conn.parseAndEval("bwdat");
-			log.info("bwDat(debug): " + bwDat.toDebugString());
+			REXP retVal = conn.parseAndEval(corrFunc);
+			conn.assign("prev_value_list", retVal);
+		
+			log.info("correlation matrix for this window: ");
+			log.info(conn.eval("paste(capture.output(print(prev_value_list)),collapse='\\n')").asString());
 			
 		} catch (RserveException e) {
 			// TODO Auto-generated catch block
@@ -379,8 +386,7 @@ public class StatStreamHistoricalRunner extends StatStreamServiceBase {
 	}
 
 	public static void main(String... aArgs) {
-		final StatStreamHistoricalRunner runner = new StatStreamHistoricalRunner();
-		runner.init();
+		final StatStreamHistoricalRunner runner = StatStreamHistoricalRunner.getInstance();
 		runner.gatherAllHistTicks();
 
 		// send update to work thread every 5 seconds
