@@ -109,7 +109,7 @@ public class StatStreamHistoricalRunner extends StatStreamServiceBase {
 	private void getAllSymbols() {
 		String fileName = config.getProperty("SYMBOL_FILE");
 		if (fileName == null) {
-			fileName = "~/dev/FHX/workspace_java/FHX_sa/conf/xlk.us.csv";
+			fileName = "~/dev/FHX/fhx_java/conf/dia.us.csv";
 		}
 
 		FileReader fileReader;
@@ -147,11 +147,14 @@ public class StatStreamHistoricalRunner extends StatStreamServiceBase {
 			dataDir = "/export/data/";
 		}
 
-		//getAllSymbols();
-		symbols.add("AAPL");
-		symbols.add("HPQ");
-		symbols.add("INTC");
-		symbols.add("XLK");
+		String index = config.getProperty("BENCHMARK_INDEX");
+		if (index == null) {
+			log.error("No benchmark index defined for the run");
+			System.exit(1);
+		}
+		
+		symbols.add(index);
+		getAllSymbols();
 		
 		Iterator<String> iter = symbols.iterator();
 		while (iter.hasNext()) {
