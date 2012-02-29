@@ -36,6 +36,9 @@ import org.rosuda.REngine.REngineException;
 import org.rosuda.REngine.RList;
 import org.rosuda.REngine.Rserve.RserveException;
 
+import com.fhx.service.ib.marketdata.IBEventServiceImpl;
+import com.fhx.service.ib.marketdata.IBOrderService;
+
 /*
  * Singleton class that hold one sliding window worth of data across all symbols
  * When the container is full, the data is served to the StatStreamProto
@@ -52,9 +55,13 @@ public class StatStreamHistoricalRunner extends StatStreamServiceBase {
 	private final Properties config = new Properties();
 	private static StatStreamHistoricalService ssService = new StatStreamHistoricalService();
 	private static StatStreamHistoricalRunner runner = new StatStreamHistoricalRunner();
+	private IBOrderService ors = IBOrderService.getInstance();
 	
 	private Hashtable<String, List<LatestMarketData>> tickDataCache = new Hashtable<String, List<LatestMarketData>>();
 	private Set<String> symbols = new TreeSet<String>();
+	
+	//TODO: remove this
+	private int cnt = 1;
 	
 	/*
 	 * Use TreeMap to guarantee ordering Example: IBM -> [LatestMarketData1,
@@ -90,6 +97,10 @@ public class StatStreamHistoricalRunner extends StatStreamServiceBase {
 					   				mktClsHr, mktClsMin, mktClsSec);
 			
 			log.info("Setting market period between " + mktOpenTime.toString() + " and " + mktCloseTime.toString());
+			
+			IBEventServiceImpl.getEventService().addOrderEventListener(ors);
+			ors.handleInit();			
+			ors.handleInitWatchlist();
 			
 		} catch (Exception e1) {
 			System.out.format("ERROR HERE\n");
@@ -344,20 +355,6 @@ public class StatStreamHistoricalRunner extends StatStreamServiceBase {
 		try {
 			conn.assign("streamData", REXP.createDataFrame(bwList));
 
-			// make sure all global variables that func needs exist
-			REXP cmd_ls_vars, streamDataTest, chopChunk, bwDat;
-
-			/*cmd_ls_vars = conn.parseAndEval("ls()");
-			streamDataTest = conn.parseAndEval("streamData");
-
-			log.info("cmd_ls_vars(debug): " + cmd_ls_vars.toDebugString());
-			log.info("streamData(debug): " + streamDataTest.toDebugString());
-			log.info(conn.eval("paste(capture.output(print(chopChunk)),collapse='\\n')").asString());
-			*/
-			
-			//String s=conn.eval("paste(capture.output(" + "corr_report <- process_basic_window3(streamData)" + ")),collapse='\\n')").asString();
-			//System.out.println(s);
-			
 			String corrFunc = "corr_report <- process_basic_window3(streamData)";
 			
 			log.info("calling process_basic_window");	
@@ -367,6 +364,11 @@ public class StatStreamHistoricalRunner extends StatStreamServiceBase {
 		
 			log.info("correlation matrix for this window: ");
 			log.info(conn.eval("paste(capture.output(print(prev_value_list)),collapse='\\n')").asString());
+			
+			//Sending order to IB
+			log.info("Sending order to IB");
+			ors.sendNewOrder("BAC", "Buy", 100*cnt++, 6.0);
+			log.info("Sent order to IB");
 			
 		} catch (RserveException e) {
 			// TODO Auto-generated catch block
