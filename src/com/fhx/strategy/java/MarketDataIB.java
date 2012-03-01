@@ -5,15 +5,12 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Date;
 import java.util.Hashtable;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -26,9 +23,12 @@ import org.marketcetera.event.AskEvent;
 import org.marketcetera.event.BidEvent;
 import org.marketcetera.event.TradeEvent;
 import org.marketcetera.marketdata.MarketDataRequest;
+import org.marketcetera.marketdata.MarketDataRequest.Content;
 import org.marketcetera.marketdata.interactivebrokers.LatestMarketData;
 
 import static org.marketcetera.marketdata.MarketDataRequest.*;
+
+import org.apache.log4j.Logger;
 
 /**
  * Strategy that receives IB market data
@@ -38,6 +38,8 @@ import static org.marketcetera.marketdata.MarketDataRequest.*;
  * @since $Release$
  */
 public class MarketDataIB extends Strategy {
+	private static Logger log = Logger.getLogger(MarketDataIB.class);
+	
     private static String SYMBOLS = "DIA,SPY,QQQ,IWM,MMM,AA,AXP,T,BAC,BA,CAT,CVX,CSCO,KO,DD,XOM,GE,HPQ,HD,INTC,IBM,JNJ,JPM,KFT,MCD,MRK,MSFT,PFE,PG,TRV,UTX,VZ,WMT,DIS,GS,C,XLK";
 	//private static String SYMBOLS = "SPY,IBM,MSFT"; // test symbols
 	//private static String SYMBOLS = "EUR,JPY,GBP";  // use FX to get real-time tick events for testing
@@ -82,7 +84,7 @@ public class MarketDataIB extends Strategy {
 			sb.append(",");
 		}
 		SYMBOLS = sb.replace(sb.lastIndexOf(","), sb.length(), "").toString();
-		System.out.print("XXXX Subscribing to market data for symbols: " + SYMBOLS);
+		log.info("XXXX Subscribing to market data for symbols: " + SYMBOLS);
 		// this goes to metc logs
 		warn("XXXX Subscribed symbols: ");
 		warn(Arrays.toString(symbolList.toArray()));
@@ -95,20 +97,28 @@ public class MarketDataIB extends Strategy {
 		mdHandle = new MarketDataHandler(symbolList, mdQueue);
 		stpe.execute(mdHandle);
 		
+		TickDataContainer.INSTANCE.init();
+		
 		// start the market data update thread
 		stpe.scheduleAtFixedRate(new Runnable() {
 			@Override
 			public void run() {
 				try {
 					mdQueue.put(latestDataCache);
+					
+					log.info("ZZZZZ: Add ticks to TickDataContainer\n");
+					/*
+					 * Collect tick data in the TickDataContainer
+					 */
+					TickDataContainer.INSTANCE.addATick(latestDataCache);
+					
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
 			}		
-			
 		}, 0, tickFrequency, TimeUnit.SECONDS);
 		
-		System.out.println("XXXX calling requestMarketData(): ");
+		log.info("XXXX calling requestMarketData(): ");
         requestMarketData(MarketDataRequest.newRequest().
                 withSymbols(SYMBOLS).
                 fromProvider(MARKET_DATA_PROVIDER).
@@ -178,7 +188,7 @@ public class MarketDataIB extends Strategy {
     		sb.append(marketTimeFormat.format(inTrade.getTimestampAsDate()));
     		sb.append("\n");
     		
-            System.out.println("XXXX onTrade= " + tickCount.get() + " | "+ sb.toString());            
+            log.info("XXXX onTrade= " + tickCount.get() + " | "+ sb.toString());            
     	}
         
     }
@@ -187,7 +197,7 @@ public class MarketDataIB extends Strategy {
     public void onOther(Object inEvent)
     {
     	warn("onOther" +inEvent);
-    	System.out.println("XXXX: onOther="+ inEvent);
+    	log.info("XXXX: onOther="+ inEvent);
     }
 
     // utils: other search method?, faster from a HashMap
@@ -209,20 +219,20 @@ public class MarketDataIB extends Strategy {
         	}
         	bufReader = new BufferedReader(new FileReader(inputFile));
 
-    		System.out.println("Start loading symbols for marketdata subscription from file: " + inputFile.getName());
+    		log.info("Start loading symbols for marketdata subscription from file: " + inputFile.getName());
 
     		String line = bufReader.readLine(); // skip the first line (header)
     		while ((line =bufReader.readLine()) !=null) {
     			symbolList.add(line);
     		}
-    		System.out.println("Done: "+inputFile+" EOF reached!!!");
+    		log.info("Done: "+inputFile+" EOF reached!!!");
 
     		bufReader.close();
 
     	} catch (FileNotFoundException fnfe) {
-    		System.out.println("The file was not found: " + fnfe.getMessage());
+    		log.error("The file was not found: " + fnfe.getMessage());
     	} catch (IOException ioe) {
-    		System.out.println("An IOException occurred: " + ioe.getMessage());
+    		log.error("An IOException occurred: " + ioe.getMessage());
     	} finally {
     		if (bufReader != null) {
     			try {
