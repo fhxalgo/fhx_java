@@ -17,6 +17,8 @@ import org.marketcetera.trade.Order;
 
 public class Test {
 
+	// test git commit 
+	
 	// pair model properties
 	private Map<String, IModel> pairModelParms = new ConcurrentHashMap<String, IModel>();
 	// order list
