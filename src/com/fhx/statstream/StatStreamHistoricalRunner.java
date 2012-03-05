@@ -38,6 +38,7 @@ import org.rosuda.REngine.Rserve.RserveException;
 
 import com.fhx.service.ib.marketdata.IBEventServiceImpl;
 import com.fhx.service.ib.marketdata.IBOrderService;
+import com.fhx.service.ib.order.IBOrderSender;
 
 /*
  * Singleton class that hold one sliding window worth of data across all symbols
@@ -55,7 +56,6 @@ public class StatStreamHistoricalRunner extends StatStreamServiceBase {
 	private final Properties config = new Properties();
 	private static StatStreamHistoricalService ssService = new StatStreamHistoricalService();
 	private static StatStreamHistoricalRunner runner = new StatStreamHistoricalRunner();
-	private IBOrderService ors = IBOrderService.getInstance();
 	
 	private Hashtable<String, List<LatestMarketData>> tickDataCache = new Hashtable<String, List<LatestMarketData>>();
 	private Set<String> symbols = new TreeSet<String>();
@@ -97,10 +97,6 @@ public class StatStreamHistoricalRunner extends StatStreamServiceBase {
 					   				mktClsHr, mktClsMin, mktClsSec);
 			
 			log.info("Setting market period between " + mktOpenTime.toString() + " and " + mktCloseTime.toString());
-			
-			IBEventServiceImpl.getEventService().addOrderEventListener(ors);
-			ors.handleInit();			
-			ors.handleInitWatchlist();
 			
 		} catch (Exception e1) {
 			System.out.format("ERROR HERE\n");
@@ -321,8 +317,7 @@ public class StatStreamHistoricalRunner extends StatStreamServiceBase {
 			for(Map.Entry<String, List<Double>> entry : midPx.entrySet()) {
 				symbol = entry.getKey();
 				val = entry.getValue();
-				
-				log.info(symbol);
+		
 				bwList.put(symbol, new REXPDouble(ArrayUtils.toPrimitive(val.toArray(new Double[val.size()]))));
 			}			
 			
@@ -350,7 +345,6 @@ public class StatStreamHistoricalRunner extends StatStreamServiceBase {
 		log.info("Processing basic window " + bwNum++);
 		
 		RList bwList = getBasicWindowRList(bwNum);
-		log.info("RList getBasicWindowRList: " + bwList);
 
 		try {
 			conn.assign("streamData", REXP.createDataFrame(bwList));
@@ -363,12 +357,11 @@ public class StatStreamHistoricalRunner extends StatStreamServiceBase {
 			conn.assign("prev_value_list", retVal);
 		
 			log.info("correlation matrix for this window: ");
-			log.info(conn.eval("paste(capture.output(print(prev_value_list)),collapse='\\n')").asString());
+			//log.info(conn.eval("paste(capture.output(print(prev_value_list)),collapse='\\n')").asString());
 			
 			//Sending order to IB
 			log.info("Sending order to IB");
-			ors.sendNewOrder("BAC", "Buy", 100*cnt++, 6.0);
-			log.info("Sent order to IB");
+			IBOrderSender.INSTANCE.addOrder("BAC", "Buy", 100*cnt++, 6.0);
 			
 		} catch (RserveException e) {
 			// TODO Auto-generated catch block
@@ -394,6 +387,10 @@ public class StatStreamHistoricalRunner extends StatStreamServiceBase {
 		final StatStreamHistoricalRunner runner = StatStreamHistoricalRunner.getInstance();
 		runner.gatherAllHistTicks();
 
+		Thread thread = new Thread(IBOrderSender.INSTANCE);
+		// Start the thread
+		thread.start();
+		
 		// send update to work thread every 5 seconds
 		ScheduledThreadPoolExecutor stpe = new ScheduledThreadPoolExecutor(5);
 
@@ -401,11 +398,11 @@ public class StatStreamHistoricalRunner extends StatStreamServiceBase {
 		stpe.scheduleAtFixedRate(new Runnable() {
 			@Override
 			public void run() {
-				log.info("Running historical tick simulation\n");
+				log.info("Running historical tick simulation");
 					
 				runner.tick();
 			}
-		}, 0, 5, TimeUnit.SECONDS);
+		}, 20, 5, TimeUnit.SECONDS);
 	}
 
 }
