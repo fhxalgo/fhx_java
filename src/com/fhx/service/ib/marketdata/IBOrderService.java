@@ -136,7 +136,7 @@ public class IBOrderService extends IBOrderEventListener {
 	 * helper method to be used in both sendorder and modifyorder.
 	 * @throws Exception
 	 */
-	private void sendOrModifyOrder(OrderSingle order) throws Exception {
+	public void sendOrModifyOrder(OrderSingle order) throws Exception {
 
 		if (!(client.getIbAdapter().getState().equals(ConnectionState.READY) || client.getIbAdapter().getState().equals(ConnectionState.SUBSCRIBED))) {
 			log.error("transaction cannot be executed, because IB is not connected");
@@ -231,13 +231,20 @@ public class IBOrderService extends IBOrderEventListener {
 	}
 	
 	public static void printOrders(Map<String, com.ib.client.Order> orders, String type) {
-		System.out.println("+++++++++++++++++++++ BEGIN +++++++++++++++++++++");
-		System.out.format("%s order map: \n", type);
+		StringBuffer sb = new StringBuffer();
+		
+		sb.append(type + " orders: \n");
+		
 		for(Map.Entry<String, com.ib.client.Order> ord : orders.entrySet())
 		{
-			System.out.format("xxxx orderId=%s, order: %s \n", ord.getKey(), ord.getValue());
+			com.ib.client.Order o = ord.getValue();
+			sb.append("orderId="+ord.getKey());
+			sb.append(",size="+o.m_action);
+			sb.append(",totalQty="+o.m_totalQuantity);
+			sb.append(",price="+o.m_lmtPrice);
+			sb.append("\n");
 		}
-		System.out.println("--------------------- END -----------------------");
+		log.info(sb.toString());
 	}
 	
 	
@@ -257,11 +264,21 @@ public class IBOrderService extends IBOrderEventListener {
 	@Override
 	public void onIBEvent(IBEventData event) {
 		// TODO Auto-generated method stub
-		System.out.format("----> IBOrderService->onIBEvent(%s), type=%s \n", event, event.getEventType());
 		
 		if (event.getEventType()==IBEventType.NextValidId) {
 			RequestIDGenerator.singleton().initializeOrderId(event.getNextOrderId());
 		}
+		
+		log.info("onIBEvent callback: event type " + event.getEventType());
+		
+		if(submittedOrders.size()>0)
+			printOrders(submittedOrders, "submitted ");
+		if(openOrders.size()>0)
+			printOrders(openOrders, "open ");
+		if(execOrders.size()>0)
+			printOrders(execOrders, "executed ");
+		if(cancelledOrders.size()>0)
+			printOrders(cancelledOrders, "cancelled ");
 	}
 	
 }

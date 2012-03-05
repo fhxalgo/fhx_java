@@ -19,7 +19,7 @@ import com.ib.client.UnderComp;
 
 public class IBDefaultAdapter implements EWrapper {
 
-	private static Logger logger = Logger.getLogger(IBDefaultAdapter.class);
+	private static Logger log = Logger.getLogger(IBDefaultAdapter.class);
 	private ConnectionState state = ConnectionState.DISCONNECTED;
 	private boolean requested;
 	private int clientId;
@@ -52,19 +52,15 @@ public class IBDefaultAdapter implements EWrapper {
 
 		// we get EOFException and SocketException when TWS is closed
 		if (!(e instanceof EOFException || e instanceof SocketException)) {
-			logger.error("ib error", e);
+			log.error("ib error", e);
 		}
 	}
 
 	@Override
 	public void error(int id, int code, String errorMsg) {
-
-		System.out.format("xxxx error(int id=%d, int code=%d, String errorMsg=%s) \n", id, code, errorMsg);
-		
 		String message = "xxxx error(int id, int code, String errorMsg) client: " + this.clientId + " id: " + id + " code: " + code + " " + errorMsg.replaceAll("\n", " ");
 		
 		IBEventData data = new IBEventData(message, IBEventType.Error);
-		System.out.println("HAHAHA: fireIBEvent: " + data);
 		IBEventServiceImpl.getEventService().fireIBEvent(data);
 
 		switch (code) {
@@ -76,21 +72,21 @@ public class IBDefaultAdapter implements EWrapper {
 
 				// Order rejected - reason:
 				// cancel the order
-				logger.error(message);
+				log.error(message);
 				break;
 
 			case 202:
 
 				// Order cancelled
 				// do nothing, since we cancelled the order ourself
-				logger.debug(message);
+				log.debug(message);
 				break;
 
 			case 399:
 
 				// Order Message: Warning: Your order size is below the EUR 20000 IdealPro minimum and will be routed as an odd lot order.
 				// do nothing, this is ok for small FX Orders
-				logger.debug(message);
+				log.debug(message);
 				break;
 
 			case 434:
@@ -98,21 +94,21 @@ public class IBDefaultAdapter implements EWrapper {
 				// The order size cannot be zero
 				// This happens in a closing order using PctChange where the percentage is
 				// small enough to round to zero for each individual client account
-				logger.debug(message);
+				log.debug(message);
 				break;
 
 			case 502:
 
 				// Couldn't connect to TWS
 				setState(ConnectionState.DISCONNECTED);
-				logger.info(message);
+				log.info(message);
 				break;
 
 			case 1100:
 
 				// Connectivity between IB and TWS has been lost.
 				setState(ConnectionState.CONNECTED);
-				logger.info(message);
+				log.info(message);
 				break;
 
 			case 1101:
@@ -121,7 +117,7 @@ public class IBDefaultAdapter implements EWrapper {
 				setRequested(false);
 				setState(ConnectionState.READY);
 				//ServiceLocator.commonInstance().getMarketDataService().initWatchlist();
-				logger.info(message);
+				log.info(message);
 				break;
 
 			case 1102:
@@ -133,14 +129,14 @@ public class IBDefaultAdapter implements EWrapper {
 					setState(ConnectionState.READY);
 					//ServiceLocator.commonInstance().getMarketDataService().initWatchlist();
 				}
-				logger.info(message);
+				log.info(message);
 				break;
 
 			case 2110:
 
 				// Connectivity between TWS and server is broken. It will be restored automatically.
 				setState(ConnectionState.CONNECTED);
-				logger.info(message);
+				log.info(message);
 				break;
 
 			case 2104:
@@ -152,14 +148,14 @@ public class IBDefaultAdapter implements EWrapper {
 					setState(ConnectionState.READY);
 					//ServiceLocator.commonInstance().getMarketDataService().initWatchlist();
 				}
-				logger.info(message);
+				log.info(message);
 				break;
 
 			default:
 				if (code < 1000) {
-					logger.error(message);
+					log.error(message);
 				} else {
-					logger.info(message);
+					log.info(message);
 				}
 				break;
 		}
@@ -167,7 +163,7 @@ public class IBDefaultAdapter implements EWrapper {
 
 	@Override
 	public void error(String str) {
-		logger.error(str, new RuntimeException(str));
+		log.error(str, new RuntimeException(str));
 	}
 
 	public ConnectionState getState() {
@@ -177,7 +173,7 @@ public class IBDefaultAdapter implements EWrapper {
 	public void setState(ConnectionState state) {
 
 		if (this.state != state) {
-			logger.debug("state: " + state);
+			log.debug("state: " + state);
 		}
 		this.state = state;
 	}
@@ -189,7 +185,7 @@ public class IBDefaultAdapter implements EWrapper {
 	public void setRequested(boolean requested) {
 
 		if (this.requested != requested) {
-			logger.debug("requested: " + requested);
+			log.debug("requested: " + requested);
 		}
 
 		this.requested = requested;
@@ -197,11 +193,7 @@ public class IBDefaultAdapter implements EWrapper {
 
 	@Override
 	public synchronized void nextValidId(final int orderId) {
-
-		//RequestIDGenerator.singleton().initializeOrderId(orderId);
-		logger.debug("IDDDD: "+EWrapperMsgGenerator.nextValidId(orderId));
-		
-		System.out.format("$$$$ IDDD: orderId=%d, nextValidId=%s \n ", orderId, EWrapperMsgGenerator.nextValidId(orderId));
+		log.info("IDDD: orderId=" + orderId + ", nextValidId=" + EWrapperMsgGenerator.nextValidId(orderId));
 		
 		IBEventData data = new IBEventData(orderId, IBEventType.NextValidId);
 		data.setNextOrderId(orderId);
@@ -228,7 +220,7 @@ public class IBDefaultAdapter implements EWrapper {
 
 	@Override
 	public void currentTime(long time) {
-		logger.info("xxxx currentTime() \n");
+		log.info("xxxx currentTime() \n");
 	}
 
 	@Override
@@ -237,10 +229,7 @@ public class IBDefaultAdapter implements EWrapper {
 
 	@Override
 	public void execDetails(int reqId, Contract contract, Execution execution) {
-		System.out.format("xxxx execDetails(int reqId=%d, Contract contract=%s, Execution execution=%s) \n", 
-				reqId, contract.m_symbol, execution.toString());
-		
-		logger.info("xxxx orderId=" + reqId +", execution=" +execution.toString());
+		log.info("execDetails(int reqId=" + reqId + ", Contract contract=" + contract.toString() + ", Execution execution=" + execution.toString() + ")" ); 
 		
 		// propagateToIBOrderService()
 		IBEventData data = new IBEventData("xxxx orderId=" + reqId +", execution=" +execution.toString(), IBEventType.ExecDetails);
@@ -249,9 +238,7 @@ public class IBDefaultAdapter implements EWrapper {
 
 	@Override
 	public void execDetailsEnd(int reqId) {
-		System.out.format("xxxx execDetails(int orderId=%d) \n", reqId);
-		
-		logger.info("xxxx reqId=" + reqId);
+		log.info("execDetails(int orderId=" + reqId +")");
 		
 		// propagateToIBOrderService()
 		IBEventData data = new IBEventData("xxxx orderId=" + reqId, IBEventType.ExecDetailsEnd);
@@ -265,8 +252,8 @@ public class IBDefaultAdapter implements EWrapper {
 	@Override
 	public void historicalData(int reqId, String date, double open, double high, double low, double close, int volume, int count, double wap, boolean hasGaps) {
 		
-		System.out.format("xxxx historicalData(reqId=%d, Symbol=%s, date=%s,  open=%f, close=%f, volume=%d, count=%d, WAP=%f, hadGaps=%s) \n",
-				reqId, requestSymbols.get(reqId), date, open, close, volume, count, wap, String.valueOf(hasGaps));
+		log.info("xxxx historicalData(reqId="+reqId+", Symbol="+requestSymbols.get(reqId)+", date="+date+",  open="+open+", close="+close+", volume="+volume+
+				 ", count="+count+", WAP="+wap+", hadGaps="+String.valueOf(hasGaps)+")");
 
 	}
 
@@ -276,10 +263,7 @@ public class IBDefaultAdapter implements EWrapper {
 
 	@Override
 	public void openOrder(int orderId, Contract contract, Order order, OrderState orderState) {
-		System.out.format("xxxx openOrder(int orderId=%d, Contract contract=%s, Order order=%s, OrderState orderState=%s) \n", 
-				orderId, contract.m_symbol, order.toString(), orderState.toString());
-		
-		logger.info("xxxx orderId=" + orderId +", order=" +order.toString());
+		log.info("openOrder->orderId|"+orderId+"||contract|"+contract.m_symbol+"||order|"+order.m_totalQuantity+"||orderState|"+orderState.m_status); 
 		
 		// propagateToIBOrderService()
 		IBEventData data = new IBEventData(order, IBEventType.OpenOrder);
@@ -290,16 +274,14 @@ public class IBDefaultAdapter implements EWrapper {
 
 	@Override
 	public void openOrderEnd() {
-		logger.info("xxxx -> openOrderEnd() \n");
+		log.info("xxxx -> openOrderEnd() \n");
 	}
 
 	@Override
 	public void orderStatus(int orderId, String status, int filled, int remaining, double avgFillPrice, int permId, int parentId, double lastFillPrice,
 			int clientId, String whyHeld) {
-		System.out.format("xxxx orderStatus(int orderId=%d, String status=%s, int filled=%d, int remaining=%d, double avgFillPrice=%f, int permId=%d, int parentId=%d, double lastFillPrice=%f, int clientId=%d, String whyHeld=%s) \n", 
-				orderId, status, filled, remaining, avgFillPrice, permId, parentId, lastFillPrice, clientId, whyHeld);
-		
-		logger.info("xxxx orderId=" + orderId +", status=" +status);
+		log.info("orderStatus->orderId|"+orderId+"||status|"+status+"||filled|"+filled+"||remaining|"+remaining+"||avgFillPrice|"+avgFillPrice+
+				 "||permId|"+permId+"||parentId|"+parentId+"||lastFillPrice|"+lastFillPrice+"||clientId|"+clientId+"||whyHeld|"+whyHeld ); 
 		
 		IBEventData data = new IBEventData(orderId+"|"+status, IBEventType.OrderStatus);
 		IBEventServiceImpl.getEventService().fireIBEvent(data);
@@ -332,17 +314,18 @@ public class IBDefaultAdapter implements EWrapper {
 
 	@Override
 	public void tickGeneric(int tickerId, int tickType, double value) {
-		System.out.format("xxxx tickGeneric(int tickerId=%d, int field=%d, double value=%f) \n", tickerId, tickType, value);
+		log.info("tickGeneric->tickerId|"+tickerId+"||field|"+tickType+"||value|"+value);
 	}
 
 	@Override
 	public void tickPrice(int tickerId, int field, double price, int canAutoExecute) {
-		System.out.format("xxxx tickPrice(int tickerId=%d, int field=%d, double price=%f, int canAutoExecute=%d) \n", tickerId, field, price, canAutoExecute);
+		log.info("tickPrice->tickerId|"+tickerId+"||field|"+field+"||price|"+price+"||canAutoExecute|"+canAutoExecute);
+				
 	}
 
 	@Override
 	public void tickSize(int tickerId, int field, int size) {
-		System.out.format("xxxx tickSize(int tickerId=%d, int field=%d, double size=%d) \n", tickerId, field, size);
+		log.info("tickSize->tickerId|"+tickerId+"||field|"+field+"||size|"+size);
 	}
 
 	@Override
@@ -360,7 +343,7 @@ public class IBDefaultAdapter implements EWrapper {
 
 	@Override
 	public void updateAccountTime(String timeStamp) {
-		System.out.println("updateAccountTime: " + timeStamp);
+		log.info("updateAccountTime->" + timeStamp);
 	}
 
 	@Override

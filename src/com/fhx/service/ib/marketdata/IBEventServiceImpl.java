@@ -56,7 +56,7 @@ public class IBEventServiceImpl {
 	        case ExecDetailsEnd:
 	        	listeners = listenerList.getListeners(IBOrderService.class);
 	        	for (Object l: listeners) {
-	        		log.info("IBEventServiceImpl: fireIBEvent("+type+") l=" + l);	
+	        		log.info("IBEventServiceImpl: fireIBEvent("+type+")");	
 	        		((IBOrderService) l).onIBEvent(event);
 	        	}
 	        	break;	
@@ -65,7 +65,7 @@ public class IBEventServiceImpl {
 	        case Trade:
 	        	listeners = listenerList.getListeners(IBMarketDataService.class);
 	        	for (Object l: listeners) {	
-	        		log.info("IBEventServiceImpl: fireIBEvent("+type+") l=" + l);
+	        		log.info("IBEventServiceImpl: fireIBEvent("+type+")");
 	        		((IBMarketDataService) l).onIBEvent(event);
 	        	}
 	        	break;
@@ -73,7 +73,7 @@ public class IBEventServiceImpl {
 	        case NextValidId:		        	
 	        	listeners = listenerList.getListeners(IBOrderService.class);		        	
 	        	for (Object l: listeners) {	
-	        		log.info("IBEventServiceImpl: fireIBEvent("+type+") l=" + l);
+	        		log.info("IBEventServiceImpl: fireIBEvent("+type+")");
 	        		((IBOrderService) l).onIBEvent(event);
 	        	}
 	        	break;

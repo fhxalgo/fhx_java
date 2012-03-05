@@ -10,17 +10,17 @@ import com.ib.client.EClientSocket;
 
 public final class IBClient extends EClientSocket {
 
-	private static Logger logger = Logger.getLogger(IBClient.class.getName());
+	private static Logger log = Logger.getLogger(IBClient.class.getName());
 
 //	private static int defaultClientId = ConfigurationUtil.getBaseConfig().getInt("ib.defaultClientId"); //0
 //	private static int port = ConfigurationUtil.getBaseConfig().getInt("ib.port"); //7496;//
 //	private static String host = ConfigurationUtil.getBaseConfig().getString("ib.host"); // "127.0.0.1";
 //	private static long connectionTimeout = ConfigurationUtil.getBaseConfig().getInt("ib.connectionTimeout"); //10000;//
 
-	private static int clientId=0;
-    private static int port=7496;  // connect to TWS webclient
-    //private static int port=4001;  // connect to IB gateway
-	private static String host = "127.0.0.1";
+	private static int clientId=9;
+    //private static int port=7496;  // connect to TWS webclient
+    private static int port=7901;  // connect to IB gateway
+	private static String host ="127.0.0.1";
 	private static long connectionTimeout = 10000;
 
 	private static int defaultClientId = 7;  // for historical request to keep IBGW alive
@@ -53,7 +53,6 @@ public final class IBClient extends EClientSocket {
 			(new Thread() {
 				@Override
 				public void run() {
-					System.out.println("xxxx IBClient...connecting");
 					instance.connect();
 				}
 			}).start();
@@ -67,33 +66,28 @@ public final class IBClient extends EClientSocket {
 
 	public void connect() {
 		
-		System.out.println("xxxx IBClient...connect(1)");
+		log.info("xxxx IBClient...connecting - host="+host+",port"+port+",clientId="+clientId);
 		if (isConnected()) {
 			eDisconnect();
 
 			sleep();
 		}
-		System.out.println("xxxx IBClient...connect(2)");
 		this.getIbAdapter().setRequested(false);
-		System.out.println("xxxx IBClient...connect(3)");
 		while (!connectionAvailable()) {
 			sleep();
 		}
 		
-		System.out.format("xxxx IBClient: %d...connect(host=%s, port=%d) \n", clientId, host, port);
 		eConnect(host, port, clientId);
 
 		if (isConnected()) {
 			this.getIbAdapter().setState(ConnectionState.READY);
 
-			System.out.println("xxxx IBClient...connected");
+			log.info("xxxx IBClient...connected");
 			// in case there is no 2104 message from the IB Gateway (Market data farm connection is OK)
 			// manually invoke initWatchlist after some time
 			sleep();
 			//ServiceLocator.commonInstance().getMarketDataService().initWatchlist();
 		}
-		
-		System.out.println("xxxx IBClient...haha");
 	}
 
 	private void sleep() {
@@ -105,7 +99,7 @@ public final class IBClient extends EClientSocket {
 				// during eDisconnect this thread get's interrupted so sleep again
 				Thread.sleep(connectionTimeout);
 			} catch (InterruptedException e2) {
-				logger.error("problem sleeping", e2);
+				log.error("problem sleeping", e2);
 			}
 		}
 	}
@@ -118,8 +112,7 @@ public final class IBClient extends EClientSocket {
 	}
 
 	private static synchronized boolean connectionAvailable() {
-		try {
-System.out.format("xxxx host: %s, port: %d \n", host, port);			
+		try {	
 			Socket socket = new Socket(host, port);
 			socket.close();
 			return true;
@@ -127,7 +120,7 @@ System.out.format("xxxx host: %s, port: %d \n", host, port);
 			// do nothing, gateway is down
 			return false;
 		} catch (IOException e) {
-			logger.error("connection error", e);
+			log.error("connection error", e);
 			return false;
 		}
 	}
