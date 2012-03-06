@@ -20,6 +20,8 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -27,6 +29,13 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.marketcetera.marketdata.interactivebrokers.LatestMarketData;
+import org.marketcetera.trade.Factory;
+import org.marketcetera.trade.MSymbol;
+import org.marketcetera.trade.OrderID;
+import org.marketcetera.trade.OrderSingle;
+import org.marketcetera.trade.OrderType;
+import org.marketcetera.trade.Side;
+import org.marketcetera.trade.TimeInForce;
 import org.rosuda.REngine.REXP;
 import org.rosuda.REngine.REXPDouble;
 import org.rosuda.REngine.REXPInteger;
@@ -38,6 +47,7 @@ import org.rosuda.REngine.Rserve.RserveException;
 
 import com.fhx.service.ib.marketdata.IBEventServiceImpl;
 import com.fhx.service.ib.marketdata.IBOrderService;
+import com.fhx.service.ib.marketdata.RequestIDGenerator;
 import com.fhx.service.ib.order.IBOrderSender;
 
 /*
@@ -59,6 +69,8 @@ public class StatStreamHistoricalRunner extends StatStreamServiceBase {
 	
 	private Hashtable<String, List<LatestMarketData>> tickDataCache = new Hashtable<String, List<LatestMarketData>>();
 	private Set<String> symbols = new TreeSet<String>();
+	
+	private static BlockingQueue<OrderSingle> orderQ = new ArrayBlockingQueue<OrderSingle>(1024);
 	
 	//TODO: remove this
 	private int cnt = 1;
@@ -341,6 +353,32 @@ public class StatStreamHistoricalRunner extends StatStreamServiceBase {
 		return bwList;
 	}
 	
+	private synchronized void addOrder(String symbol, String type, int size, double price) {
+		int orderNumber = RequestIDGenerator.singleton().getNextOrderId();
+		//order.setNumber(orderNumber);
+		OrderSingle order = Factory.getInstance().createOrderSingle();
+		order.setOrderID(new OrderID(orderNumber+""));
+		
+		//order.setOrderType(OrderType.Market);
+		order.setOrderType(OrderType.Limit);
+		order.setQuantity(new BigDecimal(size));
+		order.setPrice(new BigDecimal(price));
+		
+		if (type.equalsIgnoreCase("buy"))
+			order.setSide(Side.Buy);
+		else if (type.equalsIgnoreCase("sell"))
+			order.setSide(Side.Sell);
+		else if (type.equalsIgnoreCase("sellshort"))
+			order.setSide(Side.SellShort); 
+			
+		order.setSymbol(new MSymbol(symbol));
+		order.setTimeInForce(TimeInForce.Day);
+		
+		log.info("really adding to q");
+		orderQ.add(order);
+		log.info("really added to q");
+	}
+	
 	public void tick() {
 		log.info("Processing basic window " + bwNum++);
 		
@@ -361,7 +399,7 @@ public class StatStreamHistoricalRunner extends StatStreamServiceBase {
 			
 			//Sending order to IB
 			log.info("Sending order to IB");
-			IBOrderSender.INSTANCE.addOrder("BAC", "Buy", 100*cnt++, 6.0);
+			addOrder("BAC", "Buy", 100*cnt++, 6.0);
 			
 		} catch (RserveException e) {
 			// TODO Auto-generated catch block
@@ -387,9 +425,7 @@ public class StatStreamHistoricalRunner extends StatStreamServiceBase {
 		final StatStreamHistoricalRunner runner = StatStreamHistoricalRunner.getInstance();
 		runner.gatherAllHistTicks();
 
-		Thread thread = new Thread(IBOrderSender.INSTANCE);
-		// Start the thread
-		thread.start();
+		new Thread(new IBOrderSender(orderQ)).start();
 		
 		// send update to work thread every 5 seconds
 		ScheduledThreadPoolExecutor stpe = new ScheduledThreadPoolExecutor(5);
@@ -402,7 +438,7 @@ public class StatStreamHistoricalRunner extends StatStreamServiceBase {
 					
 				runner.tick();
 			}
-		}, 20, 5, TimeUnit.SECONDS);
+		}, 10, 5, TimeUnit.SECONDS);
 	}
 
 }

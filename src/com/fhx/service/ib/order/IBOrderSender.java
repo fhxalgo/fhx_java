@@ -1,77 +1,65 @@
 package com.fhx.service.ib.order;
 
-import java.math.BigDecimal;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.apache.log4j.Logger;
-import org.marketcetera.trade.Factory;
-import org.marketcetera.trade.MSymbol;
-import org.marketcetera.trade.OrderID;
 import org.marketcetera.trade.OrderSingle;
-import org.marketcetera.trade.OrderType;
-import org.marketcetera.trade.Side;
-import org.marketcetera.trade.TimeInForce;
 
 import com.fhx.service.ib.marketdata.IBEventServiceImpl;
 import com.fhx.service.ib.marketdata.IBOrderService;
-import com.fhx.service.ib.marketdata.RequestIDGenerator;
 
-public enum IBOrderSender implements Runnable {
-	INSTANCE;
+public class IBOrderSender implements Runnable {
 	
 	private static Logger log = Logger.getLogger(IBOrderService.class);
 	
 	private IBOrderService ors = IBOrderService.getInstance();
+	private BlockingQueue<OrderSingle> m_orderQ;
 	
-	private BlockingQueue<OrderSingle> orderQ = new ArrayBlockingQueue<OrderSingle>(1024);
+	private static final ExecutorService sNotifierPool = Executors.newCachedThreadPool();
 	
-	public void run() {
+	public IBOrderSender(BlockingQueue<OrderSingle> q) {
+		m_orderQ = q;
+		
 		IBEventServiceImpl.getEventService().addOrderEventListener(ors);
 		ors.handleInit();			
 		ors.handleInitWatchlist();
-		
+	}
+	
+	public void run() {
 		log.info("Starting IBOrderSender thread");
 		
-		while (true)
+		while (true) {
 			try {
-				OrderSingle order = orderQ.take();
+				final OrderSingle order = m_orderQ.take();
 				log.info("took next order off q: " + order.getSide()+" "+order.getSymbol()+" "+order.getQuantity()+"@"+order.getPrice());
 				
-				ors.sendOrModifyOrder(order);
+				// hand the notification chore to a thread from the thread pool
+		        sNotifierPool.submit(new Runnable() {
+		               public void run() {
+		            	   try {
+		            		   ors.sendOrModifyOrder(order);
+		            	   } catch (Exception e) {
+		            		   // TODO Auto-generated catch block
+		            		   e.printStackTrace();
+		            	   }
+		               }
+		        });
+				
 				log.info("sent order to IB");
+				Thread.sleep(1000);
 				
 			} catch (InterruptedException e) {
 				log.error("thread interrupted error " + e.getMessage() );
-				System.exit(1);
+				//System.exit(1);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
+				log.error("thread exception " + e.getMessage() );
 				e.printStackTrace();
-			}
+			} 
+		}
 	}
 	
-	public void addOrder(String symbol, String type, int size, double price) {
-		int orderNumber = RequestIDGenerator.singleton().getNextOrderId();
-		//order.setNumber(orderNumber);
-		OrderSingle order = Factory.getInstance().createOrderSingle();
-		order.setOrderID(new OrderID(orderNumber+""));
-		
-		//order.setOrderType(OrderType.Market);
-		order.setOrderType(OrderType.Limit);
-		order.setQuantity(new BigDecimal(size));
-		order.setPrice(new BigDecimal(price));
-		
-		if (type.equalsIgnoreCase("buy"))
-			order.setSide(Side.Buy);
-		else if (type.equalsIgnoreCase("sell"))
-			order.setSide(Side.Sell);
-		else if (type.equalsIgnoreCase("sellshort"))
-			order.setSide(Side.SellShort); 
-			
-		order.setSymbol(new MSymbol(symbol));
-		order.setTimeInForce(TimeInForce.Day);
-		
-		orderQ.add(order);
-	}
-
+	
 }
