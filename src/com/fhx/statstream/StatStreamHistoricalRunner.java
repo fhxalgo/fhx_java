@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -45,8 +46,6 @@ import org.rosuda.REngine.REngineException;
 import org.rosuda.REngine.RList;
 import org.rosuda.REngine.Rserve.RserveException;
 
-import com.fhx.service.ib.marketdata.IBEventServiceImpl;
-import com.fhx.service.ib.marketdata.IBOrderService;
 import com.fhx.service.ib.marketdata.RequestIDGenerator;
 import com.fhx.service.ib.order.IBOrderSender;
 
@@ -353,16 +352,17 @@ public class StatStreamHistoricalRunner extends StatStreamServiceBase {
 		return bwList;
 	}
 	
-	private synchronized void addOrder(String symbol, String type, int size, double price) {
+	private synchronized void addOrder(String symbol, String type, int qty, double price) {
 		int orderNumber = RequestIDGenerator.singleton().getNextOrderId();
 		//order.setNumber(orderNumber);
 		OrderSingle order = Factory.getInstance().createOrderSingle();
 		order.setOrderID(new OrderID(orderNumber+""));
 		
-		//order.setOrderType(OrderType.Market);
 		order.setOrderType(OrderType.Limit);
-		order.setQuantity(new BigDecimal(size));
-		order.setPrice(new BigDecimal(price));
+		order.setQuantity(new BigDecimal(qty));	
+		
+		double pxDbl = Double.parseDouble(new DecimalFormat("#.##").format(price));
+		order.setPrice(new BigDecimal(pxDbl));
 		
 		if (type.equalsIgnoreCase("buy"))
 			order.setSide(Side.Buy);
@@ -374,9 +374,9 @@ public class StatStreamHistoricalRunner extends StatStreamServiceBase {
 		order.setSymbol(new MSymbol(symbol));
 		order.setTimeInForce(TimeInForce.Day);
 		
-		log.info("really adding to q");
+		//Sending order to IB
+		log.info("Sending order to IB - "+order.getSide()+" "+order.getQuantity()+" "+order.getSymbol()+" @ "+order.getPrice());
 		orderQ.add(order);
-		log.info("really added to q");
 	}
 	
 	public void tick() {
@@ -395,11 +395,31 @@ public class StatStreamHistoricalRunner extends StatStreamServiceBase {
 			conn.assign("prev_value_list", retVal);
 		
 			log.info("correlation matrix for this window: ");
-			//log.info(conn.eval("paste(capture.output(print(prev_value_list)),collapse='\\n')").asString());
+			//log.info(conn.eval("paste(capture.output(print(order_list)),collapse='\\n')").asString());
 			
-			//Sending order to IB
-			log.info("Sending order to IB");
-			addOrder("BAC", "Buy", 100*cnt++, 6.0);
+			/*
+			 * parsing the order list
+			 * retVal.asList()[0] is the order list of R data frame
+			 * 		"Symbol",	"OrderType",	"Quantity",	"Price",	"BasicWinNum", "Time", "PnL"
+			 * 1	ABC			Buy				100			10			1			12:00:00	-
+			 * 1	CBA			Sell			100			10			1			12:00:00	-  
+			 */			
+			RList orderList = retVal.asList().at(0).asList();
+			if(orderList != null && orderList.size() > 0 ) {
+				int numRows = orderList.at(0).asStrings().length;
+				
+				String[] symbolColVal = orderList.at(0).asStrings();
+				String[] sideColVal = orderList.at(1).asStrings();
+				double[] qtyColVal = orderList.at(2).asDoubles();	//qty will be rounded into a round lot
+				double[] priceColVal = orderList.at(3).asDoubles(); //TODO: use mid-px at this point to place order
+
+				for(int i = 0; i < numRows; i++) {
+					addOrder(symbolColVal[i], 
+							 sideColVal[i], 
+							 (int)(qtyColVal[i]/100)*100,
+							 priceColVal[i]);
+				}
+			}	
 			
 		} catch (RserveException e) {
 			// TODO Auto-generated catch block
@@ -438,7 +458,7 @@ public class StatStreamHistoricalRunner extends StatStreamServiceBase {
 					
 				runner.tick();
 			}
-		}, 10, 5, TimeUnit.SECONDS);
+		}, 0, 5, TimeUnit.SECONDS);
 	}
 
 }
