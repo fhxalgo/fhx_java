@@ -71,9 +71,6 @@ public class StatStreamHistoricalRunner extends StatStreamServiceBase {
 	
 	private static BlockingQueue<OrderSingle> orderQ = new ArrayBlockingQueue<OrderSingle>(1024);
 	
-	//TODO: remove this
-	private int cnt = 1;
-	
 	/*
 	 * Use TreeMap to guarantee ordering Example: IBM -> [LatestMarketData1,
 	 * LatestMarketData2, LatestMarketData3, ... ]
@@ -416,7 +413,7 @@ public class StatStreamHistoricalRunner extends StatStreamServiceBase {
 				for(int i = 0; i < numRows; i++) {
 					addOrder(symbolColVal[i], 
 							 sideColVal[i], 
-							 (int)(qtyColVal[i]/100)*100,
+							 (int)qtyColVal[i],
 							 priceColVal[i]);
 				}
 			}	
