@@ -60,6 +60,7 @@ public class StatStreamHistoricalRunner extends StatStreamServiceBase {
 	private int basicWindowCnt = 1;
 	private int basicWindowSize = -1;
 	private int bwNum = -1;
+	private int m_tickStreamSize = 0;
 	private int mktOpenHr,mktOpenMin,mktOpenSec,mktClsHr,mktClsMin,mktClsSec;
 	private Date mktOpenTime, mktCloseTime;
 	private final Properties config = new Properties();
@@ -240,6 +241,7 @@ public class StatStreamHistoricalRunner extends StatStreamServiceBase {
 		}
 
 		log.info("Read " + tickStream.size() + " ticks for " + fileName);
+		m_tickStreamSize = tickStream.size();
 		return tickStream;
 	}
 
@@ -342,8 +344,9 @@ public class StatStreamHistoricalRunner extends StatStreamServiceBase {
 			}	
 		
 		} catch (Exception e) {
-	            System.err.println(e);
-	            System.exit(1);
+			log.error("Whoops error creating data for basic window");
+			e.printStackTrace();
+	        System.exit(1);
 	    }
 		
 		return bwList;
@@ -377,7 +380,13 @@ public class StatStreamHistoricalRunner extends StatStreamServiceBase {
 	}
 	
 	public void tick() {
-		log.info("Processing basic window " + bwNum++);
+		log.info("Processing basic window " + bwNum);
+		if(basicWindowSize*bwNum >= m_tickStreamSize ) {
+			log.info("Reached eod of the data stream, simulation done...");
+			System.exit(0);
+		}
+		
+		bwNum++;
 		
 		RList bwList = getBasicWindowRList(bwNum);
 
@@ -391,7 +400,6 @@ public class StatStreamHistoricalRunner extends StatStreamServiceBase {
 			REXP retVal = conn.parseAndEval(corrFunc);
 			conn.assign("prev_value_list", retVal);
 		
-			log.info("correlation matrix for this window: ");
 			//log.info(conn.eval("paste(capture.output(print(order_list)),collapse='\\n')").asString());
 			
 			/*
