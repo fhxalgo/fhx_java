@@ -1,6 +1,6 @@
 #!/bin/sh
 
-HOME_DIR=~/dev/FHX/FHX_sa
+HOME_DIR=~/dev/FHX/fhx_java
 
 cd ${HOME_DIR}
 

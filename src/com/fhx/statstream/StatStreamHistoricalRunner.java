@@ -17,10 +17,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -68,7 +66,7 @@ public class StatStreamHistoricalRunner extends StatStreamServiceBase {
 	private static StatStreamHistoricalRunner runner = new StatStreamHistoricalRunner();
 	
 	private Hashtable<String, List<LatestMarketData>> tickDataCache = new Hashtable<String, List<LatestMarketData>>();
-	private Set<String> symbols = new TreeSet<String>();
+	private List<String> symbols = new ArrayList<String>();
 	
 	private static BlockingQueue<OrderSingle> orderQ = new ArrayBlockingQueue<OrderSingle>(1024);
 	
@@ -290,7 +288,7 @@ public class StatStreamHistoricalRunner extends StatStreamServiceBase {
 		List<Integer> winNum = new ArrayList<Integer>();
 		LatestMarketData md;
 		List<Double> val;
-		Map<String, List<Double>> midPx = new HashMap<String, List<Double>>();
+		List<List<Double>> midPxNew = new ArrayList<List<Double>>(symbols.size());
 		boolean addOnce = false;
 		
 		final SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");	
@@ -299,14 +297,14 @@ public class StatStreamHistoricalRunner extends StatStreamServiceBase {
 		try {	
 			log.info("Creating basic window and pass it to R...");
 			
-			for(Map.Entry<String, List<LatestMarketData>> entry : tickDataCache.entrySet()) {
-				symbol = entry.getKey();
-				tickStream = entry.getValue();
+			for(int j=0; j<symbols.size(); j++) {
+				symbol = symbols.get(j);
+				tickStream = tickDataCache.get(symbol);
 				
-				List<Double> value = midPx.get(symbol);
-				if(value==null) {
+				List<Double> value = null;
+				if(midPxNew.size() <= j) {
 					value = new ArrayList<Double>();
-					midPx.put(symbol, value);
+					midPxNew.add(j, value);
 				}
 				
 				for(int i=basicWindowSize*bwNum; i<basicWindowSize*(bwNum+1); i++) {
@@ -324,23 +322,22 @@ public class StatStreamHistoricalRunner extends StatStreamServiceBase {
 			bwList.put("timestamp", new REXPString(timeStamp.toArray(new String[timeStamp.size()])));
 			bwList.put("winNum", new REXPInteger(ArrayUtils.toPrimitive(winNum.toArray(new Integer[winNum.size()]))));
 			
-			for(Map.Entry<String, List<Double>> entry : midPx.entrySet()) {
-				symbol = entry.getKey();
-				val = entry.getValue();
+			for(int i=0; i<midPxNew.size(); i++) {
+				symbol = symbols.get(i);
+				val = midPxNew.get(i);
 		
 				bwList.put(symbol, new REXPDouble(ArrayUtils.toPrimitive(val.toArray(new Double[val.size()]))));
 			}			
 			
 			for(int i=0; i<timeStamp.size(); i++) {
 				StringBuffer sb = new StringBuffer();			
-				Iterator<Map.Entry<String, List<Double>>> iter = midPx.entrySet().iterator();
-			
+				
 				sb.append("["+i+"] "+timeStamp.get(i)+"|"+winNum.get(i)+"|");
-				while(iter.hasNext()) {
-					val = (List<Double>) iter.next().getValue();
+				for(int j=0; j<midPxNew.size(); j++) {
+					val = midPxNew.get(j);
 					sb.append(val.get(i)+"|");
 				}
-				log.debug(sb.toString());
+				log.info(sb.toString());
 			}	
 		
 		} catch (Exception e) {
