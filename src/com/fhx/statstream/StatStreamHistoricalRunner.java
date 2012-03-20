@@ -10,6 +10,7 @@ import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -85,10 +86,10 @@ public class StatStreamHistoricalRunner extends StatStreamServiceBase {
 
 			config.load(new FileInputStream("conf/statstream.properties"));
 
-			basicWindowSize = Integer.parseInt(config.getProperty("BASIC_WINDOW_SIZE","32"));
+			basicWindowSize = Integer.parseInt(config.getProperty("BASIC_WINDOW_SIZE","24"));
 			
-			String runDateStr = config.getProperty("RUN_DATE","2012-02-17");
-			SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+			String runDateStr = config.getProperty("RUN_DATE","20120217");
+			SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd");
 			Date runDate = (Date)formatter.parse(runDateStr);  
 			
 			mktOpenHr = Integer.parseInt(config.getProperty("MKT_OPEN_HR","9"));
@@ -98,10 +99,17 @@ public class StatStreamHistoricalRunner extends StatStreamServiceBase {
 			mktClsMin = Integer.parseInt(config.getProperty("MKT_CLOSE_MIN","0"));
 			mktClsSec = Integer.parseInt(config.getProperty("MKT_CLOSE_SEC","0"));
 			
-			mktOpenTime = new Date(runDate.getYear(), runDate.getMonth(), runDate.getDate(), 
-								   mktOpenHr, mktOpenMin, mktOpenSec);
-			mktCloseTime = new Date(runDate.getYear(), runDate.getMonth(), runDate.getDate(), 
-					   				mktClsHr, mktClsMin, mktClsSec);
+			Calendar cal = Calendar.getInstance();
+			cal.setTime(runDate);
+			cal.set(Calendar.HOUR_OF_DAY, mktOpenHr);
+			cal.set(Calendar.MINUTE, mktOpenMin);
+			cal.set(Calendar.SECOND, mktOpenSec);
+			mktOpenTime = cal.getTime();
+			
+			cal.set(Calendar.HOUR_OF_DAY, mktClsHr);
+			cal.set(Calendar.MINUTE, mktClsMin);
+			cal.set(Calendar.SECOND, mktClsSec);
+			mktCloseTime = cal.getTime();
 			
 			log.info("Setting market period between " + mktOpenTime.toString() + " and " + mktCloseTime.toString());
 			
@@ -189,8 +197,9 @@ public class StatStreamHistoricalRunner extends StatStreamServiceBase {
 		List<LatestMarketData> tickStream = new ArrayList<LatestMarketData>();
 		StringTokenizer st;
 
-		final SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");	
-		String fileName = dataDir + symbol + "_20120217_tick.csv";
+		final SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+		String dateStr = config.getProperty("RUN_DATE","20120217");
+		String fileName = dataDir + symbol + "_"+dateStr+"_tick.csv";
 		
 		log.info("Loading tick data file " + fileName);
 
