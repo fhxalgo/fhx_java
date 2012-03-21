@@ -11,7 +11,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
@@ -337,7 +336,7 @@ public class StatStreamHistoricalRunner extends StatStreamServiceBase {
 					val = midPxNew.get(j);
 					sb.append(val.get(i)+"|");
 				}
-				log.info(sb.toString());
+				//log.debug(sb.toString());
 			}	
 		
 		} catch (Exception e) {

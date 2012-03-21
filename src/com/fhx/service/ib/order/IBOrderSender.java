@@ -48,7 +48,6 @@ public class IBOrderSender implements Runnable {
 		        });
 				
 				log.info("sent order to IB");
-				Thread.sleep(1000);
 				
 			} catch (InterruptedException e) {
 				log.error("thread interrupted error " + e.getMessage() );
