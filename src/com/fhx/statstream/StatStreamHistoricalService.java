@@ -8,7 +8,7 @@ import org.marketcetera.marketdata.interactivebrokers.LatestMarketData;
 public class StatStreamHistoricalService extends StatStreamServiceBase {
 	
 	public StatStreamHistoricalService() {
-		super.init();
+		//super.init();
 	}
 
 	@Override
