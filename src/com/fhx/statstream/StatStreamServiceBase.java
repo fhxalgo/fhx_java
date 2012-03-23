@@ -3,16 +3,30 @@ package com.fhx.statstream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.marketcetera.marketdata.interactivebrokers.LatestMarketData;
+import org.marketcetera.trade.Factory;
+import org.marketcetera.trade.MSymbol;
+import org.marketcetera.trade.OrderID;
+import org.marketcetera.trade.OrderSingle;
+import org.marketcetera.trade.OrderType;
+import org.marketcetera.trade.Side;
+import org.marketcetera.trade.TimeInForce;
 import org.rosuda.REngine.REXP;
 import org.rosuda.REngine.Rserve.RConnection;
 
+import com.fhx.service.ib.marketdata.RequestIDGenerator;
+import com.fhx.service.ib.order.IBOrderSender;
 import com.fhx.util.StatStreamUtil;
 
 
@@ -22,8 +36,11 @@ public abstract class StatStreamServiceBase {
 	private final Properties config = new Properties();
 	
 	protected int basicWindowSize = -1;
+	protected List<String> symbols = new ArrayList<String>();
 	
 	protected static RConnection conn;  // have a global R connection handler for simplicity
+	
+	private static BlockingQueue<OrderSingle> orderQ = new ArrayBlockingQueue<OrderSingle>(1024);
 	
 	public StatStreamServiceBase() {
 	}
@@ -49,8 +66,18 @@ public abstract class StatStreamServiceBase {
 		}
 		basicWindowSize = Integer.parseInt(basicWin);
 		
+		symbols = StatStreamUtil.getAllSymbols(config);
+		
+		/*
+		 * set up Rserve run environment
+		 */
 		setupRServe();
 		setupREnvironment();
+		
+		/*
+		 * start the IB order sender consumer thread 
+		 */
+		new Thread(new IBOrderSender(getOrderQ())).start();
 	}
 	
 	public void setupRServe() {
@@ -94,7 +121,37 @@ public abstract class StatStreamServiceBase {
 		}
 	}
 
+	protected synchronized void addOrder(String symbol, String type, int qty, double price) {
+		int orderNumber = RequestIDGenerator.singleton().getNextOrderId();
+		//order.setNumber(orderNumber);
+		OrderSingle order = Factory.getInstance().createOrderSingle();
+		order.setOrderID(new OrderID(orderNumber+""));
+		
+		order.setOrderType(OrderType.Limit);
+		order.setQuantity(new BigDecimal(qty));	
+		
+		double pxDbl = Double.parseDouble(new DecimalFormat("#.##").format(price));
+		order.setPrice(new BigDecimal(pxDbl));
+		
+		if (type.equalsIgnoreCase("buy"))
+			order.setSide(Side.Buy);
+		else if (type.equalsIgnoreCase("sell"))
+			order.setSide(Side.Sell);
+		else if (type.equalsIgnoreCase("sellshort"))
+			order.setSide(Side.SellShort); 
+			
+		order.setSymbol(new MSymbol(symbol));
+		order.setTimeInForce(TimeInForce.Day);
+		
+		//Sending order to IB
+		log.info("Sending order to IB - "+order.getSide()+" "+order.getQuantity()+" "+order.getSymbol()+" @ "+order.getPrice());
+		orderQ.add(order);
+	}
 	
+	public static BlockingQueue<OrderSingle> getOrderQ() {
+		return orderQ;
+	}
+
 	public abstract boolean tick(Map<String, List<LatestMarketData>> aTick, int bwNum);
 		
 }
