@@ -104,10 +104,10 @@ public class StatStreamHistoricalRunner extends StatStreamServiceBase {
 	}
 	
 	public static StatStreamHistoricalRunner getInstance() {
-		if(runner != null) 
-			return runner;
-		else 
-			return new StatStreamHistoricalRunner();
+		if(runner == null) 
+			new StatStreamHistoricalRunner();
+ 
+		return runner;
 	}
 
 	/*
@@ -142,7 +142,7 @@ public class StatStreamHistoricalRunner extends StatStreamServiceBase {
 
 		final SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 		String dateStr = config.getProperty("RUN_DATE","20120217");
-		String fileName = dataDir + symbol + "_"+dateStr+"_tick.csv";
+		String fileName = dataDir + dateStr+ "/" + symbol + "_"+dateStr+"_tick.csv";
 		
 		log.info("Loading tick data file " + fileName);
 
@@ -182,6 +182,7 @@ public class StatStreamHistoricalRunner extends StatStreamServiceBase {
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			System.exit(-1);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

@@ -114,7 +114,7 @@ public abstract class StatStreamServiceBase {
 			log.info("cmd_ls(debug): "+cmd_ls.toDebugString());
 			
 		} catch (Exception e) {
-			log.error("Failed in Rserver call");
+			log.error("Failed in Rserver call: " + funcRFile);
 			e.printStackTrace();
 			// think about recover here, i.e. Re-intialize R session and try again.
 			// recover is important as all important data are stored in R.
