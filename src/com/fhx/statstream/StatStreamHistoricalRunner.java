@@ -6,47 +6,32 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.marketcetera.marketdata.interactivebrokers.LatestMarketData;
-import org.marketcetera.trade.Factory;
-import org.marketcetera.trade.MSymbol;
-import org.marketcetera.trade.OrderID;
-import org.marketcetera.trade.OrderSingle;
-import org.marketcetera.trade.OrderType;
-import org.marketcetera.trade.Side;
-import org.marketcetera.trade.TimeInForce;
 import org.rosuda.REngine.REXP;
-import org.rosuda.REngine.REXPDouble;
-import org.rosuda.REngine.REXPInteger;
 import org.rosuda.REngine.REXPMismatchException;
-import org.rosuda.REngine.REXPString;
 import org.rosuda.REngine.REngineException;
 import org.rosuda.REngine.RList;
 import org.rosuda.REngine.Rserve.RserveException;
 
-import com.fhx.service.ib.marketdata.RequestIDGenerator;
 import com.fhx.service.ib.order.IBOrderSender;
+import com.fhx.util.StatStreamUtil;
 
 /*
  * Singleton class that hold one sliding window worth of data across all symbols
@@ -66,10 +51,8 @@ public class StatStreamHistoricalRunner extends StatStreamServiceBase {
 	private static StatStreamHistoricalService ssService = new StatStreamHistoricalService();
 	private static StatStreamHistoricalRunner runner = new StatStreamHistoricalRunner();
 	
-	private Hashtable<String, List<LatestMarketData>> tickDataCache = new Hashtable<String, List<LatestMarketData>>();
+	private Map<String, List<LatestMarketData>> tickDataCache = new HashMap<String, List<LatestMarketData>>();
 	private List<String> symbols = new ArrayList<String>();
-	
-	private static BlockingQueue<OrderSingle> orderQ = new ArrayBlockingQueue<OrderSingle>(1024);
 	
 	/*
 	 * Use TreeMap to guarantee ordering Example: IBM -> [LatestMarketData1,
@@ -77,7 +60,6 @@ public class StatStreamHistoricalRunner extends StatStreamServiceBase {
 	 */
 	private Map<String, List<LatestMarketData>> basicWindowTicks = new TreeMap<String, List<LatestMarketData>>();
 
-	@SuppressWarnings("deprecation")
 	private StatStreamHistoricalRunner() {	
 		try {
 			ssService.init();
@@ -128,38 +110,6 @@ public class StatStreamHistoricalRunner extends StatStreamServiceBase {
 		return runner;
 	}
 
-	private void getAllSymbols() {
-		String fileName = config.getProperty("SYMBOL_FILE");
-		if (fileName == null) {
-			fileName = "~/dev/FHX/fhx_java/conf/dia.us.csv";
-		}
-
-		FileReader fileReader;
-		try {
-			fileReader = new FileReader(fileName);
-
-			BufferedReader bufferedReader = new BufferedReader(fileReader);
-
-			// skip header
-			bufferedReader.readLine();
-
-			String line = null;
-			while ((line = bufferedReader.readLine()) != null) {
-				symbols.add(line.trim());
-			}
-
-			log.info("Gathered " + symbols.size() + " symbols");
-			bufferedReader.close();
-
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-
 	/*
 	 * Replay all the ticks from the tick data files
 	 */
@@ -169,20 +119,13 @@ public class StatStreamHistoricalRunner extends StatStreamServiceBase {
 			dataDir = "/export/data/";
 		}
 
-		String index = config.getProperty("BENCHMARK_INDEX");
-		if (index == null) {
-			log.error("No benchmark index defined for the run");
-			System.exit(1);
-		}
-		
-		symbols.add(index);
-		getAllSymbols();
+		symbols = StatStreamUtil.getAllSymbols(config);
 		
 		Iterator<String> iter = symbols.iterator();
 		while (iter.hasNext()) {
 			String symbol = (String) iter.next();
 
-			if (tickDataCache.contains(symbol)) {
+			if (tickDataCache.containsKey(symbol)) {
 				log.error("Should not happen, found duplicate symbol " + symbol
 						+ " in tick data directory");
 			} else {
@@ -290,101 +233,6 @@ public class StatStreamHistoricalRunner extends StatStreamServiceBase {
 		if (basicWindowTicks.get(symbol).size() >= basicWindowSize)
 			flushBasicWindow();
 	}
-
-	protected RList getBasicWindowRList(int bwNum) {
-		String symbol;
-		List<LatestMarketData> tickStream;
-		List<String> timeStamp = new ArrayList<String>();
-		List<Integer> winNum = new ArrayList<Integer>();
-		LatestMarketData md;
-		List<Double> val;
-		List<List<Double>> midPxNew = new ArrayList<List<Double>>(symbols.size());
-		boolean addOnce = false;
-		
-		final SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");	
-		RList bwList = new RList();
-		
-		try {	
-			log.info("Creating basic window and pass it to R...");
-			
-			for(int j=0; j<symbols.size(); j++) {
-				symbol = symbols.get(j);
-				tickStream = tickDataCache.get(symbol);
-				
-				List<Double> value = null;
-				if(midPxNew.size() <= j) {
-					value = new ArrayList<Double>();
-					midPxNew.add(j, value);
-				}
-				
-				for(int i=basicWindowSize*bwNum; i<basicWindowSize*(bwNum+1); i++) {
-					md =tickStream.get(i);
-					value.add(md.getLatestBid().getPrice().add(md.getLatestOffer().getPrice()).divide(new BigDecimal(2)).doubleValue());
-					
-					if(!addOnce) {
-						timeStamp.add(SDF.format(md.getTime()));
-						winNum.add(bwNum);
-					}
-				}
-				addOnce = true;
-			}
-			
-			bwList.put("timestamp", new REXPString(timeStamp.toArray(new String[timeStamp.size()])));
-			bwList.put("winNum", new REXPInteger(ArrayUtils.toPrimitive(winNum.toArray(new Integer[winNum.size()]))));
-			
-			for(int i=0; i<midPxNew.size(); i++) {
-				symbol = symbols.get(i);
-				val = midPxNew.get(i);
-		
-				bwList.put(symbol, new REXPDouble(ArrayUtils.toPrimitive(val.toArray(new Double[val.size()]))));
-			}			
-			
-			for(int i=0; i<timeStamp.size(); i++) {
-				StringBuffer sb = new StringBuffer();			
-				
-				sb.append("["+i+"] "+timeStamp.get(i)+"|"+winNum.get(i)+"|");
-				for(int j=0; j<midPxNew.size(); j++) {
-					val = midPxNew.get(j);
-					sb.append(val.get(i)+"|");
-				}
-				log.info(sb.toString());
-			}	
-		
-		} catch (Exception e) {
-			log.error("Whoops error creating data for basic window");
-			e.printStackTrace();
-	        System.exit(1);
-	    }
-		
-		return bwList;
-	}
-	
-	private synchronized void addOrder(String symbol, String type, int qty, double price) {
-		int orderNumber = RequestIDGenerator.singleton().getNextOrderId();
-		//order.setNumber(orderNumber);
-		OrderSingle order = Factory.getInstance().createOrderSingle();
-		order.setOrderID(new OrderID(orderNumber+""));
-		
-		order.setOrderType(OrderType.Limit);
-		order.setQuantity(new BigDecimal(qty));	
-		
-		double pxDbl = Double.parseDouble(new DecimalFormat("#.##").format(price));
-		order.setPrice(new BigDecimal(pxDbl));
-		
-		if (type.equalsIgnoreCase("buy"))
-			order.setSide(Side.Buy);
-		else if (type.equalsIgnoreCase("sell"))
-			order.setSide(Side.Sell);
-		else if (type.equalsIgnoreCase("sellshort"))
-			order.setSide(Side.SellShort); 
-			
-		order.setSymbol(new MSymbol(symbol));
-		order.setTimeInForce(TimeInForce.Day);
-		
-		//Sending order to IB
-		log.info("Sending order to IB - "+order.getSide()+" "+order.getQuantity()+" "+order.getSymbol()+" @ "+order.getPrice());
-		orderQ.add(order);
-	}
 	
 	public void tick() {
 		log.info("Processing basic window " + bwNum);
@@ -395,7 +243,7 @@ public class StatStreamHistoricalRunner extends StatStreamServiceBase {
 		
 		bwNum++;
 		
-		RList bwList = getBasicWindowRList(bwNum);
+		RList bwList = StatStreamUtil.getBasicWindowRList(tickDataCache, symbols, bwNum, basicWindowSize);
 
 		try {
 			conn.assign("streamData", REXP.createDataFrame(bwList));
@@ -457,7 +305,7 @@ public class StatStreamHistoricalRunner extends StatStreamServiceBase {
 		final StatStreamHistoricalRunner runner = StatStreamHistoricalRunner.getInstance();
 		runner.gatherAllHistTicks();
 
-		new Thread(new IBOrderSender(orderQ)).start();
+		new Thread(new IBOrderSender(getOrderQ())).start();
 		
 		// send update to work thread every 5 seconds
 		ScheduledThreadPoolExecutor stpe = new ScheduledThreadPoolExecutor(5);

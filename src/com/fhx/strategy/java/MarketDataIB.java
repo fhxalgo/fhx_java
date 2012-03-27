@@ -1,9 +1,7 @@
 package com.fhx.strategy.java;
 
-import java.io.BufferedReader;
-import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -11,24 +9,25 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.marketcetera.strategy.java.Strategy;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
 import org.marketcetera.event.AskEvent;
 import org.marketcetera.event.BidEvent;
 import org.marketcetera.event.TradeEvent;
 import org.marketcetera.marketdata.MarketDataRequest;
 import org.marketcetera.marketdata.MarketDataRequest.Content;
 import org.marketcetera.marketdata.interactivebrokers.LatestMarketData;
+import org.marketcetera.strategy.java.Strategy;
 
-import static org.marketcetera.marketdata.MarketDataRequest.*;
-
-import org.apache.log4j.Logger;
+import com.fhx.service.ib.order.IBOrderSender;
+import com.fhx.util.StatStreamUtil;
 
 /**
  * Strategy that receives IB market data
@@ -40,11 +39,8 @@ import org.apache.log4j.Logger;
 public class MarketDataIB extends Strategy {
 	private static Logger log = Logger.getLogger(MarketDataIB.class);
 	
-    private static String SYMBOLS = "DIA,SPY,QQQ,IWM,MMM,AA,AXP,T,BAC,BA,CAT,CVX,CSCO,KO,DD,XOM,GE,HPQ,HD,INTC,IBM,JNJ,JPM,KFT,MCD,MRK,MSFT,PFE,PG,TRV,UTX,VZ,WMT,DIS,GS,C,XLK";
-	//private static String SYMBOLS = "SPY,IBM,MSFT"; // test symbols
-	//private static String SYMBOLS = "EUR,JPY,GBP";  // use FX to get real-time tick events for testing
+	private final Properties config = new Properties();
     private static final String MARKET_DATA_PROVIDER = "interactivebrokers"; 
-	private static SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyyMMdd");
 	private static SimpleDateFormat marketTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");	
     
     private List<String> symbolList = new ArrayList<String>();
@@ -65,15 +61,18 @@ public class MarketDataIB extends Strategy {
     @Override
     public void onStart() {
 
-    	loadSymbolsFromFile();
-    	
-    	for (String symbol : SYMBOLS.split(",")) {
-    		if (!symbolList.contains(symbol)) {
-    			symbolList.add(symbol);	
-    		}
+    	PropertyConfigurator.configure("conf/log4j.properties");
+    	try {
+			config.load(new FileInputStream("conf/statstream.properties"));
+		} catch (FileNotFoundException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
 		}
 
-    	Collections.sort(symbolList);  // sort it for fast binary search of file handle index
+    	symbolList = StatStreamUtil.getAllSymbols(config);
 
 		// create market data object for each symbol
 		StringBuilder sb = new StringBuilder();
@@ -83,8 +82,8 @@ public class MarketDataIB extends Strategy {
 			sb.append(symbol);
 			sb.append(",");
 		}
-		SYMBOLS = sb.replace(sb.lastIndexOf(","), sb.length(), "").toString();
-		log.info("XXXX Subscribing to market data for symbols: " + SYMBOLS);
+		String symbolStr = sb.replace(sb.lastIndexOf(","), sb.length(), "").toString();
+		log.info("XXXX Subscribing to market data for symbols: " + symbolStr);
 		// this goes to metc logs
 		warn("XXXX Subscribed symbols: ");
 		warn(Arrays.toString(symbolList.toArray()));
@@ -120,7 +119,7 @@ public class MarketDataIB extends Strategy {
 		
 		log.info("XXXX calling requestMarketData(): ");
         requestMarketData(MarketDataRequest.newRequest().
-                withSymbols(SYMBOLS).
+                withSymbols(symbolStr).
                 fromProvider(MARKET_DATA_PROVIDER).
                 withContent(Content.LATEST_TICK, Content.TOP_OF_BOOK));
     }
@@ -205,42 +204,4 @@ public class MarketDataIB extends Strategy {
     	return Collections.binarySearch(symbolList, symbol);    	
     }
     
-    public void loadSymbolsFromFile() {
-
-    	BufferedReader bufReader =null;  
-
-    	try { 
-        	String symbolFile = System.getProperty("input.symbols");
-        	File inputFile = new File(symbolFile);
-        	
-        	// make input file configurable
-        	if (!inputFile.exists()) {
-        		return ;
-        	}
-        	bufReader = new BufferedReader(new FileReader(inputFile));
-
-    		log.info("Start loading symbols for marketdata subscription from file: " + inputFile.getName());
-
-    		String line = bufReader.readLine(); // skip the first line (header)
-    		while ((line =bufReader.readLine()) !=null) {
-    			symbolList.add(line);
-    		}
-    		log.info("Done: "+inputFile+" EOF reached!!!");
-
-    		bufReader.close();
-
-    	} catch (FileNotFoundException fnfe) {
-    		log.error("The file was not found: " + fnfe.getMessage());
-    	} catch (IOException ioe) {
-    		log.error("An IOException occurred: " + ioe.getMessage());
-    	} finally {
-    		if (bufReader != null) {
-    			try {
-    				bufReader.close();
-    			} catch (IOException ioe) {
-    				ioe.printStackTrace();
-    			}
-    		}
-    	}
-    }
 }

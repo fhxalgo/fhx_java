@@ -2,16 +2,10 @@ package com.fhx.service.ib.marketdata;
 
 import java.util.Date;
 import java.util.Hashtable;
-import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.log4j.Logger;
-//import org.springframework.beans.factory.DisposableBean;
 
 import com.ib.client.Contract;
 
