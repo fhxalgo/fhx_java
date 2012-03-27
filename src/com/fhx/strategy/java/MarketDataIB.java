@@ -91,14 +91,15 @@ public class MarketDataIB extends Strategy {
 		// send update to work thread every 5 seconds
 		ScheduledThreadPoolExecutor stpe = new ScheduledThreadPoolExecutor(5);
 		
-		// start the market data processing thread
+		log.info("Starting market data processing thread...");
 		this.mdQueue = new LinkedBlockingQueue<Hashtable<String, LatestMarketData>>();
 		mdHandle = new MarketDataHandler(symbolList, mdQueue);
 		stpe.execute(mdHandle);
 		
+		log.info("Starting tick data container collection thread...");
 		TickDataContainer.INSTANCE.init();
 		
-		// start the market data update thread
+		log.info("Start the market data update thread...");
 		stpe.scheduleAtFixedRate(new Runnable() {
 			@Override
 			public void run() {
