@@ -68,16 +68,20 @@ public abstract class StatStreamServiceBase {
 		
 		symbols = StatStreamUtil.getAllSymbols(config);
 		
+		log.info("About to set up Rserve env");
 		/*
 		 * set up Rserve run environment
 		 */
 		setupRServe();
 		setupREnvironment();
+		log.info("Done setting up Rserve env");
 		
 		/*
 		 * start the IB order sender consumer thread 
 		 */
+		log.info("Staring IBOrder sender thread...");
 		new Thread(new IBOrderSender(getOrderQ())).start();
+		log.info("Done staring IBOrder sender thread...");
 	}
 	
 	public void setupRServe() {

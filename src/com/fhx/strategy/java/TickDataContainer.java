@@ -37,7 +37,9 @@ public enum TickDataContainer {
 	
 	public void init() {
 		try {
+			log.info("Initializing");
 			ssService.init();
+			log.info("Done initializing");
 			
 			PropertyConfigurator.configure("conf/log4j.properties");		
 		
