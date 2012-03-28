@@ -55,7 +55,8 @@ public class MarketDataHandler implements Runnable {
 	    		symbolDataFileHandles[i].writeBytes("Symbol,Bid,Ask,TradePrice,TradeSize,SourceTime,CreateTime\n");
 			}
 			
-			// start tick data processing  
+			// start tick data processing
+			log.info("XXXXXX: init TickDataContainer");
 			TickDataContainer.INSTANCE.init();
 			 
 		}
@@ -98,12 +99,12 @@ public class MarketDataHandler implements Runnable {
 			    			symbolDataFileHandles[fileHandleIdx].writeBytes(data.toString());
 			    		}
 			    		else {
-			    			System.err.println("ERROR: no file handle is available for symbol: " + symbol);
+			    			log.error("ERROR: no file handle is available for symbol: " + symbol);
 			    		}
 			    	}
 			    	
 		    		// add to tick container for models 
-		    		log.info("ZZZZZ: Add ticks to TickDataContainer\n");
+		    		log.info("ZZZZZ: Add ticks to TickDataContainer.");
 		    		/*
 		    		 * Collect tick data in the TickDataContainer
 		    		 */
