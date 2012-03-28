@@ -56,8 +56,8 @@ public class MarketDataHandler implements Runnable {
 			}
 			
 			// start tick data processing
-			log.info("XXXXXX: init TickDataContainer");
-			TickDataContainer.INSTANCE.init();
+			log.info("XXXXXX: NOT init TickDataContainer");
+			//TickDataContainer.INSTANCE.init();
 			 
 		}
 		catch(FileNotFoundException e){
@@ -104,11 +104,11 @@ public class MarketDataHandler implements Runnable {
 			    	}
 			    	
 		    		// add to tick container for models 
-		    		log.info("ZZZZZ: Add ticks to TickDataContainer.");
+		    		log.info("ZZZZZ: NOT Add ticks to TickDataContainer.");
 		    		/*
 		    		 * Collect tick data in the TickDataContainer
 		    		 */
-		    		TickDataContainer.INSTANCE.addATick(ticks);
+		    		//TickDataContainer.INSTANCE.addATick(ticks);
 			    }
 				
 				//Thread.sleep(sleepInterval);
