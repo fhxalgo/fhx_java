@@ -13,9 +13,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.marketcetera.marketdata.interactivebrokers.LatestMarketData;
 
 public class MarketDataHandler implements Runnable {
+	private static Logger log = LogManager.getLogger(MarketDataHandler.class);
 
 	private static SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyyMMdd");
 	private static SimpleDateFormat DATETIME_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");	
@@ -51,6 +54,10 @@ public class MarketDataHandler implements Runnable {
 	    		// write header 
 	    		symbolDataFileHandles[i].writeBytes("Symbol,Bid,Ask,TradePrice,TradeSize,SourceTime,CreateTime\n");
 			}
+			
+			// start tick data processing  
+			TickDataContainer.INSTANCE.init();
+			 
 		}
 		catch(FileNotFoundException e){
 			e.printStackTrace();
@@ -108,4 +115,17 @@ public class MarketDataHandler implements Runnable {
     	return Collections.binarySearch(symbolList, symbol);    	
     }
 
+//    public void initTickDataContainer() {
+//		log.info("Starting tick data container collection thread...");
+//		sNotifierPool.submit(new Runnable() {
+//            public void run() {
+//         	   try {
+//         		  TickDataContainer.INSTANCE.init();
+//         	   } catch (Exception e) {
+//         		   // TODO Auto-generated catch block
+//         		   e.printStackTrace();
+//         	   }
+//            }
+//		});
+//    }
 }
