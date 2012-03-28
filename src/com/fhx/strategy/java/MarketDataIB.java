@@ -11,6 +11,8 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -50,6 +52,8 @@ public class MarketDataIB extends Strategy {
 	private BlockingQueue<Hashtable<String, LatestMarketData>> mdQueue;
 	private MarketDataHandler mdHandle;
 	private int tickFrequency = Integer.parseInt(System.getProperty("tickFrequency", "1")); // in seconds
+	
+	private static final ExecutorService sNotifierPool = Executors.newCachedThreadPool();
 	
 	private AtomicLong tickCount = new AtomicLong(0);
 	
@@ -91,14 +95,33 @@ public class MarketDataIB extends Strategy {
 		// send update to work thread every 5 seconds
 		ScheduledThreadPoolExecutor stpe = new ScheduledThreadPoolExecutor(5);
 		
-		// start the market data processing thread
+		log.info("Starting market data processing thread...");
 		this.mdQueue = new LinkedBlockingQueue<Hashtable<String, LatestMarketData>>();
 		mdHandle = new MarketDataHandler(symbolList, mdQueue);
-		stpe.execute(mdHandle);
+        sNotifierPool.submit(new Runnable() {
+               public void run() {
+            	   try {
+            		   mdHandle.run();
+            	   } catch (Exception e) {
+            		   // TODO Auto-generated catch block
+            		   e.printStackTrace();
+            	   }
+               }
+        });
 		
-		TickDataContainer.INSTANCE.init();
+		log.info("Starting tick data container collection thread...");
+		sNotifierPool.submit(new Runnable() {
+            public void run() {
+         	   try {
+         		  TickDataContainer.INSTANCE.init();
+         	   } catch (Exception e) {
+         		   // TODO Auto-generated catch block
+         		   e.printStackTrace();
+         	   }
+            }
+		});
 		
-		// start the market data update thread
+		log.info("Start the market data update thread...");
 		stpe.scheduleAtFixedRate(new Runnable() {
 			@Override
 			public void run() {
