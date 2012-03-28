@@ -109,19 +109,24 @@ public class MarketDataIB extends Strategy {
                }
         });
 		
+		log.info("Starting tick data container collection thread...");
+		sNotifierPool.submit(new Runnable() {
+            public void run() {
+         	   try {
+         		  TickDataContainer.INSTANCE.init();
+         	   } catch (Exception e) {
+         		   // TODO Auto-generated catch block
+         		   e.printStackTrace();
+         	   }
+            }
+		});
+		
 		log.info("Start the market data update thread...");
 		stpe.scheduleAtFixedRate(new Runnable() {
 			@Override
 			public void run() {
 				try {
-					mdQueue.put(latestDataCache);
-					
-					log.info("ZZZZZ: Add ticks to TickDataContainer\n");
-					/*
-					 * Collect tick data in the TickDataContainer
-					 */
-					TickDataContainer.INSTANCE.addATick(latestDataCache);
-					
+					mdQueue.put(latestDataCache);					
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}

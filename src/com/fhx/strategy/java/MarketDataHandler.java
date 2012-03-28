@@ -101,6 +101,13 @@ public class MarketDataHandler implements Runnable {
 			    			System.err.println("ERROR: no file handle is available for symbol: " + symbol);
 			    		}
 			    	}
+			    	
+		    		// add to tick container for models 
+		    		log.info("ZZZZZ: Add ticks to TickDataContainer\n");
+		    		/*
+		    		 * Collect tick data in the TickDataContainer
+		    		 */
+		    		TickDataContainer.INSTANCE.addATick(ticks);
 			    }
 				
 				//Thread.sleep(sleepInterval);
@@ -114,18 +121,5 @@ public class MarketDataHandler implements Runnable {
     public int getSymbolIndex(String symbol) {
     	return Collections.binarySearch(symbolList, symbol);    	
     }
-
-//    public void initTickDataContainer() {
-//		log.info("Starting tick data container collection thread...");
-//		sNotifierPool.submit(new Runnable() {
-//            public void run() {
-//         	   try {
-//         		  TickDataContainer.INSTANCE.init();
-//         	   } catch (Exception e) {
-//         		   // TODO Auto-generated catch block
-//         		   e.printStackTrace();
-//         	   }
-//            }
-//		});
-//    }
+    
 }
