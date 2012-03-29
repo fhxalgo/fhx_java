@@ -7,7 +7,6 @@ import java.io.RandomAccessFile;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.List;
@@ -22,13 +21,11 @@ public class MarketDataHandler implements Runnable {
 	private static Logger log = LogManager.getLogger(MarketDataHandler.class);
 
 	private static SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyyMMdd");
-	private static SimpleDateFormat DATETIME_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");	
     
     private List<String> symbolList;
 	private RandomAccessFile[] symbolDataFileHandles;
 
 	private BlockingQueue<Hashtable<String, LatestMarketData>> mdQueue;
-	private int sleepInterval = 100; // default to 100 milliseconds
 	
 	public MarketDataHandler(List<String> symbolList, BlockingQueue<Hashtable<String, LatestMarketData>> mdQueue) {
 		this.symbolList = symbolList;
@@ -83,12 +80,11 @@ public class MarketDataHandler implements Runnable {
 			    int hh = cal.get(Calendar.HOUR_OF_DAY);
 			    int mm = cal.get(Calendar.MINUTE);
 			    
-			    /*if (hh < 9 || (hh <9 && mm <25))
+			    if (hh < 9 || (hh <9 && mm <30))
 			    	continue;			    	
-			    else if (hh > 16 || (hh>16 && mm > 5))
+			    else if (hh > 16 || (hh>16 && mm > 0))
 			    	continue; 
-			    else {
-			    */	
+			    else {	
 			    	for (Map.Entry<String, LatestMarketData> tick : ticks.entrySet()) {
 			    		String symbol = tick.getKey();
 			    		LatestMarketData data = tick.getValue();
@@ -110,9 +106,7 @@ public class MarketDataHandler implements Runnable {
 		    		 */
 			    	log.info("adding ticks to tickDataContainer");
 		    		TickDataContainer.INSTANCE.addATick(ticks);
-			   // }
-				
-				//Thread.sleep(sleepInterval);
+			    }
 			}
 			catch(Exception e) {
 				e.printStackTrace();

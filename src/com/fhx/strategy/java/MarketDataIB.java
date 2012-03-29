@@ -28,7 +28,6 @@ import org.marketcetera.marketdata.MarketDataRequest.Content;
 import org.marketcetera.marketdata.interactivebrokers.LatestMarketData;
 import org.marketcetera.strategy.java.Strategy;
 
-import com.fhx.service.ib.order.IBOrderSender;
 import com.fhx.util.StatStreamUtil;
 
 /**
