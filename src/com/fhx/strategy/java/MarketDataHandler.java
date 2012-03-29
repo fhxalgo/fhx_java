@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
@@ -56,8 +57,8 @@ public class MarketDataHandler implements Runnable {
 			}
 			
 			// start tick data processing
-			log.info("XXXXXX: NOT init TickDataContainer");
-			//TickDataContainer.INSTANCE.init();
+			log.info("XXXXXX: Init TickDataContainer");
+			TickDataContainer.INSTANCE.init();
 			 
 		}
 		catch(FileNotFoundException e){
@@ -82,34 +83,34 @@ public class MarketDataHandler implements Runnable {
 			    int hh = cal.get(Calendar.HOUR_OF_DAY);
 			    int mm = cal.get(Calendar.MINUTE);
 			    
-			    if (hh < 9 || (hh <9 && mm <25))
+			    /*if (hh < 9 || (hh <9 && mm <25))
 			    	continue;			    	
 			    else if (hh > 16 || (hh>16 && mm > 5))
 			    	continue; 
 			    else {
-			    	
+			    */	
 			    	for (Map.Entry<String, LatestMarketData> tick : ticks.entrySet()) {
 			    		String symbol = tick.getKey();
 			    		LatestMarketData data = tick.getValue();
 
 			    		// write to file
-			    		int fileHandleIdx = getSymbolIndex(symbol);
+			    		int fileHandleIdx = symbolList.indexOf(symbol);
 
 			    		if (fileHandleIdx >=0 && fileHandleIdx <= symbolDataFileHandles.length) {
 			    			symbolDataFileHandles[fileHandleIdx].writeBytes(data.toString());
 			    		}
 			    		else {
-			    			log.error("ERROR: no file handle is available for symbol: " + symbol);
+			    			log.error("ERROR: no file handle is available for symbol: " + symbol + ", index " + fileHandleIdx);
+			    			log.error("symbol list \n" + Arrays.toString(symbolList.toArray()));
 			    		}
 			    	}
-			    	
-		    		// add to tick container for models 
-		    		log.info("ZZZZZ: NOT Add ticks to TickDataContainer.");
+	
 		    		/*
 		    		 * Collect tick data in the TickDataContainer
 		    		 */
-		    		//TickDataContainer.INSTANCE.addATick(ticks);
-			    }
+			    	log.info("adding ticks to tickDataContainer");
+		    		TickDataContainer.INSTANCE.addATick(ticks);
+			   // }
 				
 				//Thread.sleep(sleepInterval);
 			}
@@ -118,9 +119,4 @@ public class MarketDataHandler implements Runnable {
 			}
 		}
 	}
-	
-    public int getSymbolIndex(String symbol) {
-    	return Collections.binarySearch(symbolList, symbol);    	
-    }
-    
 }

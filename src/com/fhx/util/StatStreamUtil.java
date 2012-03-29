@@ -157,7 +157,8 @@ public class StatStreamUtil {
 					midPxNew.add(j, value);
 				}
 				
-				for(int i=basicWindowSize*bwNum; i<basicWindowSize*(bwNum+1); i++) {
+				//for(int i=basicWindowSize*bwNum; i<basicWindowSize*(bwNum+1); i++) {
+				for(int i=0; i<basicWindowSize; i++) {
 					md =tickStream.get(i);
 					value.add(md.getLatestBid().getPrice().add(md.getLatestOffer().getPrice()).divide(new BigDecimal(2)).doubleValue());
 					
@@ -187,13 +188,13 @@ public class StatStreamUtil {
 					val = midPxNew.get(j);
 					sb.append(val.get(i)+"|");
 				}
-				//log.debug(sb.toString());
+				//log.info(sb.toString());
 			}	
 		
 		} catch (Exception e) {
 			log.error("Whoops error creating data for basic window");
-			e.printStackTrace();
-	        System.exit(1);
+			log.error(e.getMessage());
+	        e.printStackTrace();
 	    }
 		
 		return bwList;

@@ -35,12 +35,18 @@ done
 
 echo ${CLASS_PATH}
 
-JAVA_ARGS="-Dorg.marketcetera.appDir=. -Dstrategy.classpath=./src -Dinput.symbols=./conf/xlk.us.csv -Dibconf.file=./conf/conf-base.properties -DtickFrequency=5 -Dfile.encoding=UTF-8"
+JAVA_ARGS="-Dorg.marketcetera.appDir=. -Dstrategy.classpath=./src -Dinput.symbols=./conf/xlk.us.csv -Dibconf.file=./conf/conf-base.properties -DtickFrequency=1 -Dfile.encoding=UTF-8"
 PROG_ARGS=scripts/MarketDataIB.txt
 
 CMD="java ${JAVA_ARGS} -classpath .:${CLASS_PATH} $MAIN_CLASS $PROG_ARGS"
 
-$CMD
+#kill existing Rserver run
+pkill Rserve
+rm ./a.out
+
+CMD="java ${JAVA_ARGS} -classpath .:${CLASS_PATH} $MAIN_CLASS $PROG_ARGS"
+
+$CMD 2>&1 > ./a.out
 
 if [ $? -eq 0 ]
 then
