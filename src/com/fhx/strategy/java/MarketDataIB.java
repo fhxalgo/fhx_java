@@ -134,9 +134,11 @@ public class MarketDataIB extends Strategy {
      */
     @Override
     public void onAsk(AskEvent inAsk) {
-        warn("Ask " + inAsk);
-        
     	tickCount.getAndIncrement();
+
+    	if (tickCount.get() % 5000 == 0) {
+    		log.info(inAsk);
+    	}
         LatestMarketData data = latestDataCache.get(inAsk.getSymbolAsString());
         data.setOfferPrice(inAsk.getPrice());
         data.setTime(inAsk.getTimestampAsDate());
@@ -151,7 +153,9 @@ public class MarketDataIB extends Strategy {
     public void onBid(BidEvent inBid) {
     	tickCount.getAndIncrement();
     	
-        warn("Bid " + inBid);        
+    	if (tickCount.get() % 2000 == 0) {
+    		log.info(inBid);
+    	}
         LatestMarketData data = latestDataCache.get(inBid.getSymbolAsString());
         data.setBidPrice(inBid.getPrice());
         data.setTime(inBid.getTimestampAsDate());
@@ -164,9 +168,8 @@ public class MarketDataIB extends Strategy {
      */
     @Override
     public void onTrade(TradeEvent inTrade) {
-        warn("Trade " + inTrade);
-        
-        //System.out.println("xxxx Trade 1 " + inTrade);
+        log.info("onTrade: " + inTrade);
+
         LatestMarketData data = latestDataCache.get(inTrade.getSymbolAsString());
         data.setTradePrice(inTrade.getPrice());
         data.setTradeSize(data.getLastestTrade().getSize().add(inTrade.getSize()));
@@ -174,7 +177,7 @@ public class MarketDataIB extends Strategy {
         //latestData.put(inTrade.getSymbolAsString(), data);
         
     	tickCount.getAndIncrement();    	
-    	if (tickCount.get() % 100000 ==0) {
+    	if (tickCount.get() % 1000 ==0) {
     		String symbol= inTrade.getSymbolAsString();
     		
     		StringBuilder sb = new StringBuilder();
