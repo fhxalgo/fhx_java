@@ -75,8 +75,6 @@ public class StatStreamUtil {
 	 */
 	public static boolean launchRserve(String cmd, String rargs, String rsrvargs, boolean debug) {
 		try {
-			debug = true;
-			
 			Process p;
 			String[] cmdStr=null;
 			boolean isWindows = false;
