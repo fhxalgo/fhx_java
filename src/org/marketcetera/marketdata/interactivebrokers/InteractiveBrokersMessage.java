@@ -12,8 +12,6 @@ public class InteractiveBrokersMessage {
 	private String requestId;
 	private List<MSymbol> symbolList=new ArrayList<MSymbol>();
 	
-
-	
 	private Contract getContractFromSymbol(String symbol) {
 		Contract contract=new Contract();
 		contract.m_secType="STK";
@@ -42,9 +40,8 @@ public class InteractiveBrokersMessage {
 	public List<Contract> getContracts() {
 		List<Contract> contracts=new ArrayList<Contract>();
 		for (MSymbol symbol : symbolList) {
-			Contract contract=new Contract();	
-			
-			// gfeng: add support for FX 
+
+			// gfeng: add support for FX -- for testing
 			if (symbol.getFullSymbol().equals("EUR")
 					|| symbol.getFullSymbol().equals("JPY")
 					|| symbol.getFullSymbol().equals("GBP"))
@@ -55,8 +52,7 @@ public class InteractiveBrokersMessage {
 		return contracts;
 	}
 
-	public void setSymbolList(List<MSymbol> inSymbolList) {
-		MSymbol symbol;		
+	public void setSymbolList(List<MSymbol> inSymbolList) {	
 		this.symbolList=inSymbolList;
 	}	
 	public void setRequestId(String inRequestId) {

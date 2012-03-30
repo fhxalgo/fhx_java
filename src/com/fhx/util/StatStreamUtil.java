@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -77,18 +78,21 @@ public class StatStreamUtil {
 			debug = true;
 			
 			Process p;
+			String[] cmdStr=null;
 			boolean isWindows = false;
 			String osname = System.getProperty("os.name");
 			if (osname != null && osname.length() >= 7 && osname.substring(0,7).equals("Windows")) {
 				isWindows = true; /* Windows startup */
-				p = Runtime.getRuntime().exec("\""+cmd+"\" -e \"library(Rserve);Rserve("+(debug?"TRUE":"FALSE")+",args='"+rsrvargs+"')\" "+rargs);
+				cmdStr = new String[] { "\""+cmd+"\" -e \"library(Rserve);Rserve("+(debug?"TRUE":"FALSE")+",args='"+rsrvargs+"')\" "+rargs };
+				p = Runtime.getRuntime().exec(cmdStr);
 			} else { /* unix startup */
-				p = Runtime.getRuntime().exec(new String[] {
-							      "/bin/sh", "-c",
-							      "echo 'library(Rserve);Rserve("+(debug?"TRUE":"FALSE")+",args=\""+rsrvargs+"\")'|"+cmd+" "+rargs
-							      });
+				cmdStr = new String[] {
+					      "/bin/sh", "-c",
+					      "echo 'library(Rserve);Rserve("+(debug?"TRUE":"FALSE")+",args=\""+rsrvargs+"\")'|"+cmd+" "+rargs
+					      }; 
+				p = Runtime.getRuntime().exec(cmdStr);
 			}
-			log.info("waiting for Rserve to start ... ("+p+")");
+			log.info("waiting for Rserve to start ... ("+Arrays.toString(cmdStr)+")");
 			// we need to fetch the output - some platforms will die if you don't ...
 			StreamHog errorHog = new StreamHog(p.getErrorStream(), false);
 			StreamHog outputHog = new StreamHog(p.getInputStream(), false);

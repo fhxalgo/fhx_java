@@ -88,15 +88,15 @@ public class MarketDataIB extends Strategy {
 		String symbolStr = sb.replace(sb.lastIndexOf(","), sb.length(), "").toString();
 		log.info("XXXX Subscribing to market data for symbols: " + symbolStr);
 		// this goes to metc logs
-		warn("XXXX Subscribed symbols: ");
-		warn(Arrays.toString(symbolList.toArray()));
+		warn("XXXX Subscribed symbols: "+Arrays.toString(symbolList.toArray()));
 		
 		// send update to work thread every 5 seconds
-		ScheduledThreadPoolExecutor stpe = new ScheduledThreadPoolExecutor(5);
+		ScheduledThreadPoolExecutor stpe = new ScheduledThreadPoolExecutor(2);
 		
-		log.info("Starting market data processing thread...");
 		this.mdQueue = new LinkedBlockingQueue<Hashtable<String, LatestMarketData>>();
 		mdHandle = new MarketDataHandler(symbolList, mdQueue);
+
+		log.info("Starting market data processing thread...");
         sNotifierPool.submit(new Runnable() {
                public void run() {
             	   try {

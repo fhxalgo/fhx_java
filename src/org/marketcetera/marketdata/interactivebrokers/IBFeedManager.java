@@ -61,8 +61,8 @@ public class IBFeedManager implements EWrapper {
 			requestSymbols.put(tickerId, contract.m_symbol);
 			getLatestMarketData(contract.m_symbol);
 
-System.out.format("XXXX IBFeedManager->requestMarketData() contract: %s, id: %d, type: %s \n", 
-			contract.m_symbol, tickerId, contract.m_secType);
+			log.info(String.format("XXXX IBFeedManager->requestMarketData() contract: %s, id: %d, type: %s \n", 
+					contract.m_symbol, tickerId, contract.m_secType));
 
 			clientSocket.reqMktData(tickerId, contract, inGenericTickList, inSnapshot);	
 			
@@ -158,8 +158,8 @@ System.out.format("XXXX IBFeedManager->requestMarketData() contract: %s, id: %d,
 			double WAP, boolean hasGaps) {
 		
 		// TODO Auto-generated method stub
-		System.out.format("xxxx historicalData: reqId=%d, Symbol=%s, date=%s,  open=%f, close=%f, volume=%d, count=%d, WAP=%f, hadGaps=%s \n",
-				reqId, requestSymbols.get(reqId), date, open, close, volume, count, WAP, String.valueOf(hasGaps));
+		log.info(String.format("xxxx historicalData: reqId=%d, Symbol=%s, date=%s,  open=%f, close=%f, volume=%d, count=%d, WAP=%f, hadGaps=%s \n",
+				reqId, requestSymbols.get(reqId), date, open, close, volume, count, WAP, String.valueOf(hasGaps)));
 		
 	}
 
@@ -271,7 +271,7 @@ System.out.format("XXXX IBFeedManager->requestMarketData() contract: %s, id: %d,
 		
 		if (this.tickCounter.get() % 1000000 ==1) {
 			log.info("<- from IB (tickPrice) tickCounter: " +this.tickCounter.get());
-			System.out.format("xxxxxxxxxxxxxx int tickerId=%d, int field=%d, double inPrice=%f, int canAutoExe=%d \n", tickerId, field, inPrice, canAutoExecute);	
+			log.info(String.format("xxxxxxxxxxxxxx int tickerId=%d, int field=%d, double inPrice=%f, int canAutoExe=%d \n", tickerId, field, inPrice, canAutoExecute));	
 		}
 		
 		BigDecimal price=new BigDecimal(inPrice);
@@ -395,7 +395,7 @@ System.out.format("XXXX IBFeedManager->requestMarketData() contract: %s, id: %d,
 	@Override
 	public void error(int id, int errorCode, String errorMsg) {
 		// TODO Auto-generated method stub
-		System.out.format("xxxx error(int id=%d, int errorCode=%d, String errorMsg=%s \n", id, errorCode, errorMsg);
+		log.info(String.format("xxxx error(int id=%d, int errorCode=%d, String errorMsg=%s \n", id, errorCode, errorMsg));
 	}
 
 	@Override
