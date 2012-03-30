@@ -107,21 +107,22 @@ public abstract class StatStreamServiceBase {
 	
 	public void setupREnvironment() {
 		final String funcRFile = config.getProperty("R_SVC_SCRIPT");
-		
+		final String cmdStr = "source('"+funcRFile+"')";
 		try {
 			// source the main R file to initialize global variables referenced by R functions
-			log.info("try to run R cmd: source('"+funcRFile+"')");
-			conn.parseAndEval("source('"+funcRFile+"')");
+			log.info("try to run R cmd: " + cmdStr);
+			conn.parseAndEval(cmdStr);
 			
 			// check that all global variables exists 
 			REXP cmd_ls = conn.parseAndEval("ls()");
 			log.info("cmd_ls(debug): "+cmd_ls.toDebugString());
 			
 		} catch (Exception e) {
-			log.error("Failed in Rserver call: " + funcRFile);
+			log.error("Failed in Rserver call: " + cmdStr);
 			e.printStackTrace();
 			// think about recover here, i.e. Re-intialize R session and try again.
 			// recover is important as all important data are stored in R.
+			
 		}
 	}
 

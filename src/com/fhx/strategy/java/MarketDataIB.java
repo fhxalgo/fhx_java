@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Properties;
@@ -20,6 +19,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
+
 import org.marketcetera.event.AskEvent;
 import org.marketcetera.event.BidEvent;
 import org.marketcetera.event.TradeEvent;
@@ -200,11 +200,6 @@ public class MarketDataIB extends Strategy {
     {
     	warn("onOther" +inEvent);
     	log.info("XXXX: onOther="+ inEvent);
-    }
-
-    // utils: other search method?, faster from a HashMap
-    public int getSymbolIndex(String symbol) {
-    	return Collections.binarySearch(symbolList, symbol);    	
     }
     
 }
