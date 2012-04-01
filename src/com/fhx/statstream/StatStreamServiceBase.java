@@ -72,16 +72,15 @@ public abstract class StatStreamServiceBase {
 		/*
 		 * set up Rserve run environment
 		 */
-		setupRServe();
-		setupREnvironment();
-		log.info("Done setting up Rserve env");
+		setupRServe();  // establish RConnection
+		setupREnvironment();  // initialize R model script
+		log.info("Connected to Rserve env.  Starting IBOrder sender thread...");
 		
 		/*
 		 * start the IB order sender consumer thread 
 		 */
-		log.info("Staring IBOrder sender thread...");
 		new Thread(new IBOrderSender(getOrderQ())).start();
-		log.info("Done staring IBOrder sender thread...");
+		log.info("IBOrder sender thread started...");
 	}
 	
 	public void setupRServe() {
@@ -100,8 +99,9 @@ public abstract class StatStreamServiceBase {
 			String host = config.getProperty("HOST");
 			conn = new RConnection(host);
 		} catch (Exception e) {
-			log.error("Error creating new RConnection on localhost\n" );
 			e.printStackTrace();
+			log.error("Error creating new RConnection on localhost, exiting...\n" );
+			System.exit(-1);
 		};
 	}
 	
@@ -123,6 +123,8 @@ public abstract class StatStreamServiceBase {
 			// think about recover here, i.e. Re-intialize R session and try again.
 			// recover is important as all important data are stored in R.
 			
+			// fail it for now.
+			System.exit(-2);
 		}
 	}
 

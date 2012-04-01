@@ -52,8 +52,12 @@ public class StatStreamUtil {
 			}
 			if (installPath == null) {
 				log.info("ERROR: canot find path to R. Make sure reg is available and R was installed with registry settings.");
-				return false;
+				//return false;
 			}
+			
+			log.info("Setting R installPath to: (C:\\Program Files (x86)\\R\\R-2.10.1) George's tactical fix ");
+			installPath = "C:\\Program Files (x86)\\R\\R-2.10.1";
+			
 			return launchRserve(installPath+"\\bin\\R.exe");
 		}
 		return (launchRserve("R") || /* try some common unix locations of R */
@@ -74,7 +78,9 @@ public class StatStreamUtil {
 	 @return <code>true</code> if Rserve is running or was successfully started, <code>false</code> otherwise.
 	 */
 	public static boolean launchRserve(String cmd, String rargs, String rsrvargs, boolean debug) {
-		try {
+		try {			
+			debug=true; // for testing: to see R debug lines
+			
 			Process p;
 			String[] cmdStr=null;
 			boolean isWindows = false;
@@ -82,12 +88,14 @@ public class StatStreamUtil {
 			if (osname != null && osname.length() >= 7 && osname.substring(0,7).equals("Windows")) {
 				isWindows = true; /* Windows startup */
 				cmdStr = new String[] { "\""+cmd+"\" -e \"library(Rserve);Rserve("+(debug?"TRUE":"FALSE")+",args='"+rsrvargs+"')\" "+rargs };
+				log.info("Starting R: " + Arrays.toString(cmdStr));
 				p = Runtime.getRuntime().exec(cmdStr);
 			} else { /* unix startup */
 				cmdStr = new String[] {
 					      "/bin/sh", "-c",
 					      "echo 'library(Rserve);Rserve("+(debug?"TRUE":"FALSE")+",args=\""+rsrvargs+"\")'|"+cmd+" "+rargs
-					      }; 
+					      };
+				log.info("Starting R: " + Arrays.toString(cmdStr));
 				p = Runtime.getRuntime().exec(cmdStr);
 			}
 			log.info("waiting for Rserve to start ... ("+Arrays.toString(cmdStr)+")");
@@ -95,12 +103,13 @@ public class StatStreamUtil {
 			StreamHog errorHog = new StreamHog(p.getErrorStream(), false);
 			StreamHog outputHog = new StreamHog(p.getInputStream(), false);
 			if (!isWindows) /* on Windows the process will never return, so we cannot wait */
-			//	p.waitFor();
+				p.waitFor();
 			log.info("call terminated, let us try to connect ...");
 		} catch (Exception x) {
-			log.info("failed to start Rserve process with "+x.getMessage());
+			log.error("ERROR: failed to start Rserve process, error: "+x.getMessage());
 			return false;
 		}
+		
 		int attempts = 5; /* try up to 5 times before giving up. We can be conservative here, because at this point the process execution itself was successful and the start up is usually asynchronous */
 		while (attempts > 0) {
 			try {
@@ -147,7 +156,7 @@ public class StatStreamUtil {
 		RList bwList = new RList();
 		
 		try {	
-			log.info("Creating basic window and pass it to R...");
+			log.info("Creating basic window (basicWindowSize="+basicWindowSize+") and pass it to R...bwNum="+bwNum);
 			
 			for(int j=0; j<symbols.size(); j++) {
 				symbol = symbols.get(j);
@@ -164,6 +173,10 @@ public class StatStreamUtil {
 					md =tickStream.get(i);
 					value.add(md.getLatestBid().getPrice().add(md.getLatestOffer().getPrice()).divide(new BigDecimal(2)).doubleValue());
 					
+//					log.info("haha: md=" + md);
+//					log.info("haha: md.getTime=" + md.getTime());
+//					log.info("haha: SDF=" + SDF);
+//					log.info("haha: winNum=" + winNum);
 					if(!addOnce) {
 						timeStamp.add(SDF.format(md.getTime()));
 						winNum.add(bwNum);
@@ -190,7 +203,7 @@ public class StatStreamUtil {
 					val = midPxNew.get(j);
 					sb.append(val.get(i)+"|");
 				}
-				//log.info(sb.toString());
+				log.info(sb.toString());
 			}	
 		
 		} catch (Exception e) {

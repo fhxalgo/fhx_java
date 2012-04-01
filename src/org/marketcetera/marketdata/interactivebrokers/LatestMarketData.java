@@ -56,7 +56,8 @@ public class LatestMarketData {
 		this.latestTime = time;
 	}
 	public Date getTime() {
-		return this.latestTime;
+		//return this.latestTime;
+		return null == this.latestTime ? new Date() : this.latestTime; // for offline testing
 	}
 	
 	public String toString() {

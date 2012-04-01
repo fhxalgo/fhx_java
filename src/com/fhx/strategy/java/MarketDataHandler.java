@@ -12,6 +12,7 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -26,6 +27,7 @@ public class MarketDataHandler implements Runnable {
 	private RandomAccessFile[] symbolDataFileHandles;
 
 	private BlockingQueue<Hashtable<String, LatestMarketData>> mdQueue;
+	private AtomicInteger tickCount = new AtomicInteger(0);
 	
 	public MarketDataHandler(List<String> symbolList, BlockingQueue<Hashtable<String, LatestMarketData>> mdQueue) {
 		this.symbolList = symbolList;
@@ -80,10 +82,10 @@ public class MarketDataHandler implements Runnable {
 			    int hh = cal.get(Calendar.HOUR_OF_DAY);
 			    int mm = cal.get(Calendar.MINUTE);
 			    
-			    if (hh < 9 || (hh <9 && mm <30))
+			    if (hh < 9 || (hh <= 9 && mm < 29))
 			    	continue;			    	
-			    else if (hh > 16 || (hh>16 && mm > 0))
-			    	continue; 
+//			    else if (hh > 16 || (hh >= 16 && mm > 1))
+//			    	continue; 
 			    else {	
 			    	for (Map.Entry<String, LatestMarketData> tick : ticks.entrySet()) {
 			    		String symbol = tick.getKey();
@@ -104,7 +106,7 @@ public class MarketDataHandler implements Runnable {
 		    		/*
 		    		 * Collect tick data in the TickDataContainer
 		    		 */
-			    	log.info("adding ticks to tickDataContainer");
+			    	log.info("adding ticks ["+tickCount.getAndIncrement()+"] to tickDataContainer");
 		    		TickDataContainer.INSTANCE.addATick(ticks);
 			    }
 			}

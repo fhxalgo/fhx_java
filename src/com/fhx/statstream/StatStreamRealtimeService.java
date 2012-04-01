@@ -36,15 +36,16 @@ public class StatStreamRealtimeService extends StatStreamServiceBase {
 		try {
 			conn.assign("streamData", REXP.createDataFrame(bwList));
 
-			String corrFunc = "corr_report <- process_basic_window3(streamData)";
+			String corrFunc = "corr_report <- process_basic_window4(streamData, "+bwNum+")";
 			
-			log.info("calling process_basic_window");	
+			log.info("calling: " + corrFunc);	
 			
 			REXP retVal = conn.parseAndEval(corrFunc);
 			conn.assign("prev_value_list", retVal);
 		
-			//log.info(conn.eval("paste(capture.output(print(order_list)),collapse='\\n')").asString());
+			log.info(conn.eval("paste(capture.output(print(chopChunk)),collapse='\\n')").asString());
 			
+			//log.info(conn.eval("paste(capture.output(print(order_list)),collapse='\\n')").asString());
 			/*
 			 * parsing the order list
 			 * retVal.asList()[0] is the order list of R data frame
@@ -75,6 +76,8 @@ public class StatStreamRealtimeService extends StatStreamServiceBase {
 		} catch (REngineException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			log.error("Calling process_basic_window() ran into error, bwNum="+bwNum+" exiting...");
+			System.exit(-4);
 		} catch (REXPMismatchException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
