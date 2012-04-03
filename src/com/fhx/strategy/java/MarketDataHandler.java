@@ -82,9 +82,9 @@ public class MarketDataHandler implements Runnable {
 			    int hh = cal.get(Calendar.HOUR_OF_DAY);
 			    int mm = cal.get(Calendar.MINUTE);
 			    
-			    if (hh < 9 || (hh <= 9 && mm < 29))
+			    if (hh < 9 || (hh == 9 && mm < 30))
 			    	continue;			    	
-//			    else if (hh > 16 || (hh >= 16 && mm > 1))
+//			    else if (hh > 16 || (hh == 16 && mm > 1))
 //			    	continue; 
 			    else {	
 			    	for (Map.Entry<String, LatestMarketData> tick : ticks.entrySet()) {
