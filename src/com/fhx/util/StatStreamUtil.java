@@ -79,7 +79,7 @@ public class StatStreamUtil {
 	 */
 	public static boolean launchRserve(String cmd, String rargs, String rsrvargs, boolean debug) {
 		try {			
-			debug=true; // for testing: to see R debug lines
+			//debug=true; // for testing: to see R debug lines
 			
 			Process p;
 			String[] cmdStr=null;
