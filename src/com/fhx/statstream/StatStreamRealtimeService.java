@@ -77,7 +77,7 @@ public class StatStreamRealtimeService extends StatStreamServiceBase {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			log.error("Calling process_basic_window() ran into error, bwNum="+bwNum+" exiting...");
-			System.exit(-4);
+			//System.exit(-4);
 		} catch (REXPMismatchException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
