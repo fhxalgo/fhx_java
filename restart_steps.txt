@@ -1,0 +1,18 @@
+restart all - in case server needs to be rebooted.  Should put 1~5 into a script.
+
+1. start x11vnc server: root@hfxalgo:/home/root/script/x11vnc_start
+
+2. start MySql server: root@hfxalgo:/etc/init.d/mysql.server start
+
+3. start IB gateway as root: root@hfxalgo:/home/hfxdev/IBJts/run.sh
+
+Note: 1,2,3 need to run as root
+
+4. start FHX_IBServer as hfxdev: hfxdev@hfxalgo:/home/hfxdev/FHX_IBService-v1.0/runIBHist.sh
+
+5. start ors as hfxdev: hfxdev@hfxalgo:/home/hfxdev/ors/bin/sa.sh 
+
+6. start sa as hfxdev: hfxdev@hfxalgo:/home/hfxdev/sa/runIB.sh (this is running under cron daily) 
+
+Do not run 4,5,6 as root.
+
