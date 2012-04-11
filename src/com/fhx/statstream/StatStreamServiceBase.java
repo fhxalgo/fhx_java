@@ -33,7 +33,7 @@ import com.fhx.util.StatStreamUtil;
 public abstract class StatStreamServiceBase {
 
 	private static Logger log = Logger.getLogger(StatStreamServiceBase.class);
-	private final Properties config = new Properties();
+	protected final Properties config = new Properties();
 	
 	protected int basicWindowSize = -1;
 	protected List<String> symbols = new ArrayList<String>();
@@ -106,16 +106,25 @@ public abstract class StatStreamServiceBase {
 	}
 	
 	public void setupREnvironment() {
-		final String funcRFile = config.getProperty("R_SVC_SCRIPT");
-		final String cmdStr = "source('"+funcRFile+"')";
+		String funcRFile = config.getProperty("R_MAIN_SCRIPT");
+		String cmdStr = "source('"+funcRFile+"')";
+		
 		try {
 			// source the main R file to initialize global variables referenced by R functions
-			log.info("try to run R cmd: " + cmdStr);
+			log.info("try to source R (main) file: " + cmdStr);
 			conn.parseAndEval(cmdStr);
 			
 			// check that all global variables exists 
 			REXP cmd_ls = conn.parseAndEval("ls()");
-			log.info("cmd_ls(debug): "+cmd_ls.toDebugString());
+			log.info("R->ls(): "+cmd_ls.toDebugString());
+			
+			// next source the func file
+			funcRFile = config.getProperty("R_FUNC_SCRIPT");
+			cmdStr = "source('"+funcRFile+"')";
+			
+			log.info("try to source R (func) file: " + cmdStr);
+			conn.parseAndEval(cmdStr);
+			
 			
 		} catch (Exception e) {
 			log.error("Failed in Rserver call: " + cmdStr);

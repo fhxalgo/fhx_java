@@ -26,8 +26,11 @@ public class StatStreamUtil {
 	
 	private static Logger log = Logger.getLogger(StatStreamUtil.class);
 	
-	public static boolean launchRserve(String cmd) { 
-		return launchRserve(cmd, "--no-save --slave","--no-save --slave",false); 
+	protected static Properties config;
+	public static boolean launchRserve(String cmd) {
+		boolean debug = Boolean.parseBoolean(config.getProperty("R_DEBUG","false"));
+		
+		return launchRserve(cmd, "--no-save --slave","--no-save --slave",debug); 
 	}
 	
 	/* checks whether Rserve is running and if that's not the case it attempts to start it using the defaults for the platform where it is run on. 
@@ -79,7 +82,7 @@ public class StatStreamUtil {
 	 */
 	public static boolean launchRserve(String cmd, String rargs, String rsrvargs, boolean debug) {
 		try {			
-			//debug=true; // for testing: to see R debug lines
+			log.info(String.format("cmd=%s, rargs=%s, rsrvargs=%s, debug=%s", cmd,rargs,rsrvargs,debug));
 			
 			Process p;
 			String[] cmdStr=null;
@@ -215,7 +218,8 @@ public class StatStreamUtil {
 		return bwList;
 	}
 	
-	public static List<String> getAllSymbols(Properties config) {
+	public static List<String> getAllSymbols(Properties inConfig) {
+		config = inConfig;
 		String index = config.getProperty("BENCHMARK_INDEX");
 		if (index == null) {
 			log.error("No benchmark index defined for the run");

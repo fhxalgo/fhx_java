@@ -36,14 +36,19 @@ public class StatStreamRealtimeService extends StatStreamServiceBase {
 		try {
 			conn.assign("streamData", REXP.createDataFrame(bwList));
 
-			String corrFunc = "corr_report <- process_basic_window4(streamData, "+bwNum+")";
+			String corrFunc = "retList <- process_bw_ticks(streamData, "+bwNum+")";
 			
 			log.info("calling: " + corrFunc);	
 			
 			REXP retVal = conn.parseAndEval(corrFunc);
-			conn.assign("prev_value_list", retVal);
+			//conn.assign("prev_value_list", retVal);  // update R var based on returned val
 		
-			log.info(conn.eval("paste(capture.output(print(chopChunk)),collapse='\\n')").asString());
+			log.info(conn.eval("paste(capture.output(print(retList)),collapse='\\n')").asString());
+			
+			// turn on/off the model
+			if (Boolean.parseBoolean(config.getProperty("SIMULATION","false"))) {
+				return true;
+			}
 			
 			//log.info(conn.eval("paste(capture.output(print(order_list)),collapse='\\n')").asString());
 			/*
