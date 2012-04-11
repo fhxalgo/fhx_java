@@ -118,14 +118,6 @@ public abstract class StatStreamServiceBase {
 			REXP cmd_ls = conn.parseAndEval("ls()");
 			log.info("R->ls(): "+cmd_ls.toDebugString());
 			
-			// next source the func file
-			funcRFile = config.getProperty("R_FUNC_SCRIPT");
-			cmdStr = "source('"+funcRFile+"')";
-			
-			log.info("try to source R (func) file: " + cmdStr);
-			conn.parseAndEval(cmdStr);
-			
-			
 		} catch (Exception e) {
 			log.error("Failed in Rserver call: " + cmdStr);
 			e.printStackTrace();

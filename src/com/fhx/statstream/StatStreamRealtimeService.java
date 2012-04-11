@@ -34,6 +34,14 @@ public class StatStreamRealtimeService extends StatStreamServiceBase {
 		RList bwList = StatStreamUtil.getBasicWindowRList(aTick, symbols, bwNum, basicWindowSize);
 
 		try {
+			// source the func file, do this everytime so the function file can be updated real-time, COOL
+			String funcRFile = config.getProperty("R_FUNC_SCRIPT");
+			String cmdStr = "source('"+funcRFile+"')";
+			
+			log.info("try to source R (func) file: " + cmdStr);
+			conn.parseAndEval(cmdStr);
+			
+			// next process func call
 			conn.assign("streamData", REXP.createDataFrame(bwList));
 
 			String corrFunc = "retList <- process_bw_ticks(streamData, "+bwNum+")";
