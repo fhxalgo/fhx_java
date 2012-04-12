@@ -52,7 +52,7 @@ public class StatStreamRealtimeService extends StatStreamServiceBase {
 			REXP retVal = conn.parseAndEval(corrFunc);
 			//conn.assign("prev_value_list", retVal);  // update R var based on returned val
 		
-			log.info(conn.eval("paste(capture.output(print(retList)),collapse='\\n')").asString());
+			log.info("retList from R: " +conn.eval("paste(capture.output(print(retList)),collapse='\\n')").asString());
 			
 			// turn on/off the model
 			if (Boolean.parseBoolean(config.getProperty("SIMULATION","false"))) {
