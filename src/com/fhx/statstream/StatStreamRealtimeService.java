@@ -17,14 +17,14 @@ import com.fhx.util.StatStreamUtil;
 
 public class StatStreamRealtimeService extends StatStreamServiceBase {
 
-	private static Logger log = Logger
-			.getLogger(StatStreamRealtimeService.class);
+	private static Logger log = Logger.getLogger(StatStreamRealtimeService.class);
 	
 	List<String> m_timeStamp = new ArrayList<String>();
 	List<Integer> m_winNum = new ArrayList<Integer>();
 	Map<String, List<Double>> m_midPx = new HashMap<String, List<Double>>();
 
 	public StatStreamRealtimeService() {
+		
 	}
 
 	@Override
@@ -44,7 +44,8 @@ public class StatStreamRealtimeService extends StatStreamServiceBase {
 			// next process func call
 			conn.assign("streamData", REXP.createDataFrame(bwList));
 
-			String corrFunc = "retList <- process_bw_ticks(streamData, "+bwNum+")";
+			//String corrFunc = "retList <- process_bw_ticks(streamData, "+bwNum+")";
+			String corrFunc = "retList <- test() ";
 			
 			log.info("calling: " + corrFunc);	
 			
@@ -55,6 +56,8 @@ public class StatStreamRealtimeService extends StatStreamServiceBase {
 			
 			// turn on/off the model
 			if (Boolean.parseBoolean(config.getProperty("SIMULATION","false"))) {
+				log.info("Running in simulation mode, not sending orders to IB. ");
+				
 				return true;
 			}
 			
@@ -84,20 +87,17 @@ public class StatStreamRealtimeService extends StatStreamServiceBase {
 			}	
 			
 		} catch (RserveException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (REngineException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
-			log.error("Calling process_basic_window() ran into error, bwNum="+bwNum+" exiting...");
+			log.error("Calling process_bw_ticks() ran into error, bwNum="+bwNum+", exiting...");
 			//System.exit(-4);
 		} catch (REXPMismatchException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
 		return true;
 	}
 	
