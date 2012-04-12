@@ -19,14 +19,14 @@
   <macrodef name="fancy-echo"> 
     <attribute name="text" default="default value"/> 
     <sequential> 
-      <echo message="by attribute"/> 
-      <echo message="this is the simple example with parameter @{text}"/> 
+      <echo message="by quanttradingideas.com"/> 
+      <echo message="type ant deploy to @{text}"/> 
     </sequential> 
   </macrodef> 
 
   <!-- usage examples --> 
   <target name="help" description="print this help"> 
-    <fancy-echo text="some text"/> 
+    <fancy-echo text="pull from github, build it, and deploy it.  have fun!!"/> 
     <echo/> 
     <echo message="NOW: ${NOW} "/> 
   </target> 
@@ -197,7 +197,7 @@ https://github.com/fhxalgo/fhx_model
   </target>
 
 
-<target name="deploy" depends="all">
+<target name="deploy" depends="init,build">
     <copy todir="/home/hfxdev/sa/modules/jars">
       <fileset dir="${build.version}/jars">
         <include name="*.jar" />
@@ -219,9 +219,15 @@ https://github.com/fhxalgo/fhx_model
         <include name="*.properties" />
       </fileset>
     </copy>
+    <copy todir="/export/FHX/fhx_model">
+      <fileset dir="/home/hfxdev/build/fhx_model/output">
+        <include name="correlation_realtime_svc.r" />
+        <include name="test*.r" />
+      </fileset>
+    </copy>
 </target>
 
-  <target name="all" depends="init,build">
+  <target name="all" depends="deploy">
     <echo>SUCCESS: ${app.version}</echo>
       <tar destfile="${app.version}_${NOW}/${app}-${app.version}.tar" basedir="${app.version}_${NOW}/${app}-${app.version}" />
 
