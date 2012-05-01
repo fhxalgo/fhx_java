@@ -44,7 +44,7 @@ public class StatStreamRealtimeService extends StatStreamServiceBase {
 			// next process func call
 			conn.assign("streamData", REXP.createDataFrame(bwList));
 
-			String corrFunc = "retList <- process_bw_ticks(streamData, "+bwNum+")";
+			String corrFunc = "retList <- process_bw_data(streamData, "+bwNum+")";
 			//String corrFunc = "retList <- process_bw_ticks()";
 			//String corrFunc = "retList <- test() ";
 			
