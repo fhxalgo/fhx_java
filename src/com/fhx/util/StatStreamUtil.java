@@ -9,6 +9,7 @@ import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -181,7 +182,12 @@ public class StatStreamUtil {
 //					log.info("haha: SDF=" + SDF);
 //					log.info("haha: winNum=" + winNum);
 					if(!addOnce) {
-						timeStamp.add(SDF.format(md.getTime()));
+						if (Boolean.parseBoolean(config.getProperty("SIMULATION","false"))) {
+							timeStamp.add(SDF.format(new Date()));
+						}
+						else {
+							timeStamp.add(SDF.format(md.getTime()));
+						}
 						winNum.add(bwNum);
 					}
 				}
