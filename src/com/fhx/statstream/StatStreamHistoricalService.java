@@ -203,7 +203,7 @@ public class StatStreamHistoricalService extends StatStreamServiceBase {
 			
 			REXP retVal = conn.parseAndEval(corrFunc);
 		
-			log.info("retList from R: " +conn.eval("paste(capture.output(print(retList)),collapse='\\n')").asString());
+			log.info("order_list from R: " +conn.eval("paste(capture.output(print(do.call(rbind,entry_order_list))),collapse='\\n')").asString());
 			
 			// turn on/off the model
 			if (Boolean.parseBoolean(config.getProperty("SIMULATION","false"))) {
