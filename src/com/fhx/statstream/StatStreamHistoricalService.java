@@ -118,8 +118,9 @@ public class StatStreamHistoricalService extends StatStreamServiceBase {
 		StringTokenizer st;
 
 		final SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-		String dateStr = config.getProperty("RUN_DATE","20120217");
-		String fileName = dataDir + dateStr+ "_md/" + symbol + "_"+dateStr+"_tick.csv";
+		final SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd");
+		String dateStr = config.getProperty("RUN_DATE",formatter.format(new Date()));
+		String fileName = dataDir + dateStr + "_md/" + symbol + "_"+dateStr+"_tick.csv";
 		
 		log.info("Loading tick data file " + fileName);
 
@@ -144,10 +145,7 @@ public class StatStreamHistoricalService extends StatStreamServiceBase {
 				st.nextToken(); //trade price
 				st.nextToken(); //trade size
 				
-				Date time = SDF.parse(st.nextToken());
-				if(time.before(mktOpenTime) || time.after(mktCloseTime))
-					continue;
-				
+				Date time = SDF.parse(st.nextToken());			
 				lmd.setTime(time);   //source time
 
 				tickStream.add(lmd);
@@ -239,14 +237,17 @@ public class StatStreamHistoricalService extends StatStreamServiceBase {
 			
 		} catch (RserveException e) {
 			e.printStackTrace();
+			System.exit(-4);
 		} catch (REngineException e) {
 			e.printStackTrace();
 			log.error("Calling process_bw_ticks() ran into error, bwNum="+bwNum+", exiting...");
-			//System.exit(-4);
+			System.exit(-4);
 		} catch (REXPMismatchException e) {
 			e.printStackTrace();
+			System.exit(-4);
 		} catch (Exception e) {
 			e.printStackTrace();
+			System.exit(-4);
 		}
 		
 		return true;
