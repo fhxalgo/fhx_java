@@ -12,7 +12,9 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.marketcetera.marketdata.interactivebrokers.LatestMarketData;
 
+import com.fhx.statstream.StatStreamHistoricalService;
 import com.fhx.statstream.StatStreamRealtimeService;
+import com.fhx.statstream.StatStreamServiceBase;
 
 /*
  * Singleton class that hold one sliding window worth of data across all symbols
@@ -26,7 +28,7 @@ public enum TickDataContainer {
 	private int basicWindowCnt = 1;
 	private int basicWindowSize = -1;
 	private final Properties config = new Properties();
-	private static StatStreamRealtimeService ssService = new StatStreamRealtimeService();
+	private static StatStreamServiceBase ssService;
 
 	/*
 	 * Use TreeMap to guarantee ordering
@@ -38,12 +40,21 @@ public enum TickDataContainer {
 	public void init() {
 		try {
 			log.info("Initializing");
-			ssService.init();
-			log.info("Done initializing");
 			
 			PropertyConfigurator.configure("conf/log4j.properties");		
-		
 			config.load(new FileInputStream("conf/statstream.properties"));
+			
+			String mode = config.getProperty("MD_SERVICE_MODE");
+			if(mode == null || "Historical".equals(mode)) {
+				log.info("Defaulting to use historical market data service");
+				ssService = new StatStreamHistoricalService();
+			}
+			else {
+				log.info("Setting to use realtime market data service");
+				ssService = new StatStreamRealtimeService();
+			}
+			ssService.init();
+			log.info("Done initializing");
 			
 			String basicWin = config.getProperty("BASIC_WINDOW_SIZE");
 			if(basicWin== null) {
