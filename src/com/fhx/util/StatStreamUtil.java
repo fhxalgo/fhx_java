@@ -9,7 +9,6 @@ import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -177,17 +176,8 @@ public class StatStreamUtil {
 					md =tickStream.get(i);
 					value.add(md.getLatestBid().getPrice().add(md.getLatestOffer().getPrice()).divide(new BigDecimal(2)).doubleValue());
 					
-//					log.info("haha: md=" + md);
-//					log.info("haha: md.getTime=" + md.getTime());
-//					log.info("haha: SDF=" + SDF);
-//					log.info("haha: winNum=" + winNum);
 					if(!addOnce) {
-						if (Boolean.parseBoolean(config.getProperty("SIMULATION","false"))) {
-							timeStamp.add(SDF.format(new Date()));
-						}
-						else {
-							timeStamp.add(SDF.format(md.getTime()));
-						}
+						timeStamp.add(SDF.format(md.getTime()));						
 						winNum.add(bwNum);
 					}
 				}
