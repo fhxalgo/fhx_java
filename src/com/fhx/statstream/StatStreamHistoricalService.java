@@ -118,8 +118,8 @@ public class StatStreamHistoricalService extends StatStreamServiceBase {
 		StringTokenizer st;
 
 		final SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-		String dateStr = config.getProperty("RUN_DATE","20120217");
-		String fileName = dataDir + dateStr+ "_md/" + symbol + "_"+dateStr+"_tick.csv";
+		String dateStr = config.getProperty("RUN_DATE",SDF.format(new Date()));
+		String fileName = dataDir + dateStr + "/" + symbol + "_"+dateStr+"_tick.csv";
 		
 		log.info("Loading tick data file " + fileName);
 
