@@ -237,14 +237,17 @@ public class StatStreamHistoricalService extends StatStreamServiceBase {
 			
 		} catch (RserveException e) {
 			e.printStackTrace();
+			System.exit(-4);
 		} catch (REngineException e) {
 			e.printStackTrace();
 			log.error("Calling process_bw_ticks() ran into error, bwNum="+bwNum+", exiting...");
-			//System.exit(-4);
+			System.exit(-4);
 		} catch (REXPMismatchException e) {
 			e.printStackTrace();
+			System.exit(-4);
 		} catch (Exception e) {
 			e.printStackTrace();
+			System.exit(-4);
 		}
 		
 		return true;
