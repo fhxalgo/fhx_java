@@ -145,10 +145,7 @@ public class StatStreamHistoricalService extends StatStreamServiceBase {
 				st.nextToken(); //trade price
 				st.nextToken(); //trade size
 				
-				Date time = SDF.parse(st.nextToken());
-				if(time.before(mktOpenTime) || time.after(mktCloseTime))
-					continue;
-				
+				Date time = SDF.parse(st.nextToken());			
 				lmd.setTime(time);   //source time
 
 				tickStream.add(lmd);
