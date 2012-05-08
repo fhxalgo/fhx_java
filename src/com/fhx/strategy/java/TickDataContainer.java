@@ -102,7 +102,7 @@ public enum TickDataContainer {
 			}
 		}
 		
-		if(basicWindowTicks.get(symbol).size() >= basicWindowSize)			
+		if(basicWindowTicks.values().iterator().next().size() >= basicWindowSize)			
 			flushBasicWindow();
 	}
 	
