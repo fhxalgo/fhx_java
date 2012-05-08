@@ -99,6 +99,7 @@ public enum TickDataContainer {
 				basicWindowTicks.put(symbol, ticksPerSymbol);
 			}
 			else {
+				log.info("adding new tick for symbol "+symbol);
 				ticksPerSymbol.add(data);
 			}
 		}
