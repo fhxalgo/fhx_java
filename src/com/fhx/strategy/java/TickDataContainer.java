@@ -84,10 +84,9 @@ public enum TickDataContainer {
 	}
 	
 	public void addATick(Map<String, LatestMarketData> aTick) {
-		String symbol=null;
-		
+
 		for(Map.Entry<String, LatestMarketData> tick : aTick.entrySet()) {
-			symbol = tick.getKey();
+			String symbol = tick.getKey();
 			LatestMarketData data = tick.getValue();
 			
 			if (!basicWindowTicks.containsKey(symbol)) {
