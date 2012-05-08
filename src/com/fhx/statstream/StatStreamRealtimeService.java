@@ -43,22 +43,19 @@ public class StatStreamRealtimeService extends StatStreamServiceBase {
 			
 			// next process func call
 			conn.assign("streamData", REXP.createDataFrame(bwList));
-
-			String corrFunc = "retList <- process_bw_data(streamData, "+bwNum+")";
-			//String corrFunc = "retList <- process_bw_ticks()";
-			//String corrFunc = "retList <- test() ";
+			String execFunc = config.getProperty("R_FUNC_EXEC");
+			//"retList <- process_bw_data(streamData, "+bwNum+")";
+			String funcExpr = String.format("%s(%s, %d)", execFunc, "streamData", bwNum); 			
+			log.info("R_FUNC_EXEC: " + funcExpr);
 			
-			log.info("calling: " + corrFunc);	
-			
-			REXP retVal = conn.parseAndEval(corrFunc);
-			//conn.assign("prev_value_list", retVal);  // update R var based on returned val
+			REXP retVal = conn.parseAndEval(funcExpr);
 		
-			log.info("order_list from R: " +conn.eval("paste(capture.output(print(do.call(rbind,entry_order_list))),collapse='\\n')").asString());
+			String funcEval = config.getProperty("R_FUNC_EVAL");
+			log.info("order_list from R: " +conn.eval(funcEval).asString());
 			
-			// turn on/off the model
+			// turn on/off the model output if running simulation
 			if (Boolean.parseBoolean(config.getProperty("SIMULATION","false"))) {
-				log.info("Running in simulation mode, not sending orders to IB. ");
-				
+				log.info("Running in simulation mode, not sending orders to IB. ");				
 				return true;
 			}
 			
