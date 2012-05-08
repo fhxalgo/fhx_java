@@ -84,23 +84,21 @@ public enum TickDataContainer {
 	}
 	
 	public void addATick(Map<String, LatestMarketData> aTick) {
-		String symbol = "";
-		LatestMarketData data;
+		String symbol=null;
 		
 		for(Map.Entry<String, LatestMarketData> tick : aTick.entrySet()) {
 			symbol = tick.getKey();
-			data = tick.getValue();
+			LatestMarketData data = tick.getValue();
 			
-			List<LatestMarketData> ticksPerSymbol = basicWindowTicks.get(symbol);
-			if(ticksPerSymbol==null) {
+			if (!basicWindowTicks.containsKey(symbol)) {
 				log.info("initializing arraylist for symbol "+symbol);
-				ticksPerSymbol = new ArrayList<LatestMarketData>();
+				List<LatestMarketData> ticksPerSymbol = new ArrayList<LatestMarketData>();
 				ticksPerSymbol.add(data);
 				basicWindowTicks.put(symbol, ticksPerSymbol);
 			}
 			else {
 				log.info("adding new tick for symbol "+symbol);
-				ticksPerSymbol.add(data);
+				basicWindowTicks.get(symbol).add(data);
 			}
 		}
 		
