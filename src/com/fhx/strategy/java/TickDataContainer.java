@@ -3,6 +3,7 @@ package com.fhx.strategy.java;
 import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -72,6 +73,22 @@ public enum TickDataContainer {
 	
 	public void flushBasicWindow() {
 		log.info("Serving basic window # " + basicWindowCnt + " to the StatStream model" );
+		
+		log.info("Content of basicWindowTicks");
+		StringBuffer sb = new StringBuffer();
+		for(Map.Entry<String, List<LatestMarketData>> entry : basicWindowTicks.entrySet()) {
+			String sym = entry.getKey();
+			sb.append(sym+"|");
+			List<LatestMarketData> val = entry.getValue();
+			
+			Iterator<LatestMarketData> iter = val.iterator();
+			while(iter.hasNext()) {
+				sb.append(iter.next().getLatestBid());
+				sb.append("|");
+			}
+			sb.append("\n");
+		}
+		log.info(sb.toString());
 		
 		/*
 		 * format basic window data and serve it to StatStream model
