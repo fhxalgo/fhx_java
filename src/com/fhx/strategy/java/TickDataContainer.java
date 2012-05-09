@@ -93,7 +93,10 @@ public enum TickDataContainer {
 		/*
 		 * format basic window data and serve it to StatStream model
 		 */
-		ssService.tick(basicWindowTicks, basicWindowCnt++);
+		// make a copy of basicWindowTicks and pass it along
+		final Map<String, List<LatestMarketData>> copyBasicWindowTicks = new TreeMap<String, List<LatestMarketData>>();
+		copyBasicWindowTicks.putAll(basicWindowTicks);		
+		ssService.tick(copyBasicWindowTicks, basicWindowCnt++);
 		
 		log.info("Flushing basic window " + basicWindowCnt + ", invoking StatStreamService");
 		log.info("Size of basic window = "+ basicWindowTicks.values().iterator().next().size());
@@ -101,26 +104,24 @@ public enum TickDataContainer {
 	}
 	
 	public void addATick(Map<String, LatestMarketData> aTick) {
-		String symbol = "";
-		LatestMarketData data;
-		
+
 		for(Map.Entry<String, LatestMarketData> tick : aTick.entrySet()) {
-			symbol = tick.getKey();
-			data = tick.getValue();
+			String symbol = tick.getKey();
+			LatestMarketData data = tick.getValue();
 			
-			List<LatestMarketData> ticksPerSymbol = basicWindowTicks.get(symbol);
-			if(ticksPerSymbol==null) {
+			if (!basicWindowTicks.containsKey(symbol)) {
 				log.info("initializing arraylist for symbol "+symbol);
-				ticksPerSymbol = new ArrayList<LatestMarketData>();
+				List<LatestMarketData> ticksPerSymbol = new ArrayList<LatestMarketData>();
 				ticksPerSymbol.add(data);
 				basicWindowTicks.put(symbol, ticksPerSymbol);
 			}
 			else {
-				ticksPerSymbol.add(data);
+				log.info("adding new tick for symbol "+symbol);
+				basicWindowTicks.get(symbol).add(data);
 			}
 		}
 		
-		if(basicWindowTicks.get(symbol).size() >= basicWindowSize)			
+		if(basicWindowTicks.values().iterator().next().size() >= basicWindowSize)			
 			flushBasicWindow();
 	}
 	
