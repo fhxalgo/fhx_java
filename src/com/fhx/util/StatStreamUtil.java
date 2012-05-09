@@ -105,7 +105,7 @@ public class StatStreamUtil {
 			// we need to fetch the output - some platforms will die if you don't ...
 			StreamHog errorHog = new StreamHog(p.getErrorStream(), false);
 			StreamHog outputHog = new StreamHog(p.getInputStream(), false);
-			if (!isWindows) /* on Windows the process will never return, so we cannot wait */
+			if (!isWindows && !debug) /* on Windows the process will never return, so we cannot wait */
 				p.waitFor();
 			log.info("call terminated, let us try to connect ...");
 		} catch (Exception x) {
