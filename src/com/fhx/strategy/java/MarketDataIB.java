@@ -168,9 +168,6 @@ public class MarketDataIB extends Strategy {
      */
     @Override
     public void onTrade(TradeEvent inTrade) {
-    	if (tickCount.get() % 1000 == 0) {
-            log.info("onTrade: " + inTrade);
-    	}
 
         LatestMarketData data = latestDataCache.get(inTrade.getSymbolAsString());
         data.setTradePrice(inTrade.getPrice());
@@ -195,6 +192,7 @@ public class MarketDataIB extends Strategy {
     		sb.append(marketTimeFormat.format(inTrade.getTimestampAsDate()));
     		sb.append("\n");
     		
+    		log.info("onTrade: " + inTrade);
             log.info("XXXX onTrade= " + tickCount.get() + " | "+ sb.toString());            
     	}
         

@@ -76,7 +76,10 @@ public enum TickDataContainer {
 		/*
 		 * format basic window data and serve it to StatStream model
 		 */
-		ssService.tick(basicWindowTicks, basicWindowCnt++);
+		// make a copy of basicWindowTicks and pass it along
+		final Map<String, List<LatestMarketData>> copyBasicWindowTicks = new TreeMap<String, List<LatestMarketData>>();
+		copyBasicWindowTicks.putAll(basicWindowTicks);		
+		ssService.tick(copyBasicWindowTicks, basicWindowCnt++);
 		
 		log.info("Flushing basic window " + basicWindowCnt + ", invoking StatStreamService");
 		log.info("Size of basic window = "+ basicWindowTicks.values().iterator().next().size());
