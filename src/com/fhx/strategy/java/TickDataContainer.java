@@ -3,6 +3,7 @@ package com.fhx.strategy.java;
 import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -107,7 +108,13 @@ public enum TickDataContainer {
 
 		for(Map.Entry<String, LatestMarketData> tick : aTick.entrySet()) {
 			String symbol = tick.getKey();
-			LatestMarketData data = tick.getValue();
+			LatestMarketData data_ref = tick.getValue();
+			
+			//TODO: temporary deep copy implementation, better handling
+			LatestMarketData data = new LatestMarketData(symbol);
+			data.setBidPrice(data_ref.getLatestBid().getPrice());
+			data.setOfferPrice(data_ref.getLatestOffer().getPrice());
+			data.setTime(new Date());
 			
 			if (!basicWindowTicks.containsKey(symbol)) {
 				log.info("initializing arraylist for symbol "+symbol);
