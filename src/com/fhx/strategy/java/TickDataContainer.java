@@ -75,29 +75,10 @@ public enum TickDataContainer {
 	public void flushBasicWindow() {
 		log.info("Serving basic window # " + basicWindowCnt + " to the StatStream model" );
 		
-		log.info("Content of basicWindowTicks");
-		StringBuffer sb = new StringBuffer();
-		for(Map.Entry<String, List<LatestMarketData>> entry : basicWindowTicks.entrySet()) {
-			String sym = entry.getKey();
-			sb.append(sym+"|");
-			List<LatestMarketData> val = entry.getValue();
-			
-			Iterator<LatestMarketData> iter = val.iterator();
-			while(iter.hasNext()) {
-				sb.append(iter.next().getLatestBid());
-				sb.append("|");
-			}
-			sb.append("\n");
-		}
-		log.info(sb.toString());
-		
 		/*
 		 * format basic window data and serve it to StatStream model
 		 */
-		// make a copy of basicWindowTicks and pass it along
-		final Map<String, List<LatestMarketData>> copyBasicWindowTicks = new TreeMap<String, List<LatestMarketData>>();
-		copyBasicWindowTicks.putAll(basicWindowTicks);		
-		ssService.tick(copyBasicWindowTicks, basicWindowCnt++);
+		ssService.tick(basicWindowTicks, basicWindowCnt++);
 		
 		log.info("Flushing basic window " + basicWindowCnt + ", invoking StatStreamService");
 		log.info("Size of basic window = "+ basicWindowTicks.values().iterator().next().size());
