@@ -98,13 +98,13 @@ public enum TickDataContainer {
 			data.setTime(new Date());
 			
 			if (!basicWindowTicks.containsKey(symbol)) {
-				log.info("initializing arraylist for symbol "+symbol);
+				//log.info("initializing arraylist for symbol "+symbol);
 				List<LatestMarketData> ticksPerSymbol = new ArrayList<LatestMarketData>();
 				ticksPerSymbol.add(data);
 				basicWindowTicks.put(symbol, ticksPerSymbol);
 			}
 			else {
-				log.info("adding new tick for symbol "+symbol);
+				//log.info("adding new tick for symbol "+symbol);
 				basicWindowTicks.get(symbol).add(data);
 			}
 		}
