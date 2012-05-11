@@ -60,7 +60,10 @@ public class StatStreamRealtimeService extends StatStreamServiceBase {
 			 * 		"Symbol",	"OrderType",	"Quantity",	"Price",	"BasicWinNum", "Time", "PnL"
 			 * 1	ABC			Buy				100			10			1			12:00:00	-
 			 * 1	CBA			Sell			100			10			1			12:00:00	-  
-			 */			
+			 */	
+			if (retVal == null || retVal.asList() == null || retVal.asList().at(0) == null || retVal.asList().at(0).asList()==null)
+				return false;
+			
 			RList orderList = retVal.asList().at(0).asList();
 			if(orderList != null && orderList.size() > 0 ) {
 				int numRows = orderList.at(0).asStrings().length;
