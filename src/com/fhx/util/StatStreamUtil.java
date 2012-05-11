@@ -202,7 +202,7 @@ public class StatStreamUtil {
 					val = midPxNew.get(j);
 					sb.append(val.get(i)+"|");
 				}
-				log.info(sb.toString());
+				//log.info(sb.toString());
 			}	
 		
 		} catch (Exception e) {
