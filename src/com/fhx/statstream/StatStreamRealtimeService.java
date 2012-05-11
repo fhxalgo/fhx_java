@@ -53,12 +53,6 @@ public class StatStreamRealtimeService extends StatStreamServiceBase {
 			String funcEval = config.getProperty("R_FUNC_EVAL");
 			log.info("order_list from R: " +conn.eval(funcEval).asString());
 			
-			// turn on/off the model output if running simulation
-			if (Boolean.parseBoolean(config.getProperty("SIMULATION","false"))) {
-				log.info("Running in simulation mode, not sending orders to IB. ");				
-				return true;
-			}
-			
 			//log.info(conn.eval("paste(capture.output(print(order_list)),collapse='\\n')").asString());
 			/*
 			 * parsing the order list
