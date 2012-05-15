@@ -61,13 +61,29 @@ public class StatStreamRealtimeService extends StatStreamServiceBase {
 			 * 1	ABC			Buy				100			10			1			12:00:00	-
 			 * 1	CBA			Sell			100			10			1			12:00:00	-  
 			 */	
-			if (retVal == null || retVal.asList() == null || retVal.asList().at(0) == null || retVal.asList().at(0).asList()==null)
+			if(retVal == null) {
+				log.error("retVal is null");
 				return false;
+			}
+			if(retVal.asList() == null) {
+				log.error("retVal.asList is null");
+				return false;
+			}
+			if(retVal.asList().at(0) == null) {
+				log.error("retVal.asList.at(0) is null");
+				return false;
+			}
+			if(retVal.asList().at(0).asList() == null) {
+				log.error("retVal.asList.at(0).asList() is null");
+				return false;
+			}
 			
 			RList orderList = retVal.asList().at(0).asList();
+			log.info("order list size = " + orderList.size());
 			if(orderList != null && orderList.size() > 0 ) {
 				int numRows = orderList.at(0).asStrings().length;
 				
+				log.info("numRows = " + numRows);
 				String[] symbolColVal = orderList.at(0).asStrings();
 				String[] sideColVal = orderList.at(1).asStrings();
 				double[] qtyColVal = orderList.at(2).asDoubles();	//qty will be rounded into a round lot
