@@ -73,28 +73,20 @@ public class StatStreamRealtimeService extends StatStreamServiceBase {
 				log.error("retVal.asList.at(0) is null");
 				return false;
 			}
-			if(retVal.asList().at(0).asList() == null) {
-				log.error("retVal.asList.at(0).asList() is null");
-				return false;
-			}
 			
-			RList orderList = retVal.asList().at(0).asList();
+			RList orderList = retVal.asList();
 			log.info("order list size = " + orderList.size());
 			if(orderList != null && orderList.size() > 0 ) {
-				int numRows = orderList.at(0).asStrings().length;
-				
-				log.info("numRows = " + numRows);
 				String[] symbolColVal = orderList.at(0).asStrings();
 				String[] sideColVal = orderList.at(1).asStrings();
 				double[] qtyColVal = orderList.at(2).asDoubles();	//qty will be rounded into a round lot
 				double[] priceColVal = orderList.at(3).asDoubles(); //TODO: use mid-px at this point to place order
 
-				for(int i = 0; i < numRows; i++) {
-					addOrder(symbolColVal[i], 
-							 sideColVal[i], 
-							 (int)qtyColVal[i],
-							 priceColVal[i]);
-				}
+				log.info("model returned order "+symbolColVal[0]+"|"+sideColVal[0]+"|"+(int)qtyColVal[0]+"|"+priceColVal[0]);
+				addOrder(symbolColVal[0], 
+						 sideColVal[0], 
+						 (int)qtyColVal[0],
+						 priceColVal[0]);
 			}	
 			
 		} catch (RserveException e) {
