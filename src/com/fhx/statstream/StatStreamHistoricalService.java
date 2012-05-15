@@ -223,6 +223,10 @@ public class StatStreamHistoricalService extends StatStreamServiceBase {
 				log.error("retVal.asList.at(0) is null");
 				return false;
 			}
+			else {
+				log.info("retVal.asList()[0] = " + retVal.asList().at(0));
+				log.info(retVal.asList().at(0).asString());
+			}
 			if(retVal.asList().at(0).asList() == null) {
 				log.error("retVal.asList.at(0).asList() is null");
 				return false;
