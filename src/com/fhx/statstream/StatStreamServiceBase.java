@@ -145,7 +145,7 @@ public abstract class StatStreamServiceBase {
 			order.setSide(Side.Buy);
 		else if (type.equalsIgnoreCase("sell"))
 			order.setSide(Side.Sell);
-		else if (type.equalsIgnoreCase("sellshort"))
+		else if (type.equalsIgnoreCase("shortsell"))
 			order.setSide(Side.SellShort); 
 			
 		order.setSymbol(new MSymbol(symbol));
