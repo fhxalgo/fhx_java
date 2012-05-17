@@ -193,13 +193,15 @@ public class StatStreamHistoricalService extends StatStreamServiceBase {
 			
 			// next process func call
 			conn.assign("streamData", REXP.createDataFrame(bwList));
-
-			String corrFunc = "retList <- process_bw_data(streamData, "+bwNum+")";
-			//String corrFunc = "retList <- test() ";
+			String execFunc = config.getProperty("R_FUNC_EXEC");
 			
-			log.info("calling: " + corrFunc);	
+			if("True".equals(config.getProperty("TEST_ORDER_MODE")))
+				execFunc = config.getProperty("R_FUNC_TEST_ORDER");
 			
-			REXP retVal = conn.parseAndEval(corrFunc);
+			String funcExpr = String.format("%s(%s, %d)", execFunc, "streamData", bwNum); 			
+			log.info("R_FUNC_EXEC: " + funcExpr);
+			
+			REXP retVal = conn.parseAndEval(funcExpr);
 		
 			log.info("order_list from R: " +conn.eval("paste(capture.output(print(do.call(rbind,entry_order_list))),collapse='\\n')").asString());
 			
