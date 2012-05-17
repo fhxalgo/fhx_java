@@ -51,6 +51,7 @@ public class StatStreamRealtimeService extends StatStreamServiceBase {
 			REXP retVal = conn.parseAndEval(funcExpr);
 		
 			String funcEval = config.getProperty("R_FUNC_EVAL");
+			log.info("R_FUNC_EVAL: " + funcEval);
 			log.info("order_list from R: " +conn.eval(funcEval).asString());
 			
 			//log.info(conn.eval("paste(capture.output(print(order_list)),collapse='\\n')").asString());
