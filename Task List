@@ -5,3 +5,9 @@
 3. Realtime position pull from IB and pass to R
 4. PNL/trade signal analytics
 5. Code cleanup - to be defined
+
+model:
+
+	- add PCA prediction model
+	- add factor to include short-term volatility
+	- Risk and sharp ratio calc 
