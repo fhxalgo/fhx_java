@@ -44,7 +44,10 @@ public class StatStreamRealtimeService extends StatStreamServiceBase {
 			// next process func call
 			conn.assign("streamData", REXP.createDataFrame(bwList));
 			String execFunc = config.getProperty("R_FUNC_EXEC");
-			//"retList <- process_bw_data(streamData, "+bwNum+")";
+
+			if("True".equals(config.getProperty("TEST_ORDER_MODE")))
+				execFunc = config.getProperty("R_FUNC_TEST_ORDER");
+			
 			String funcExpr = String.format("%s(%s, %d)", execFunc, "streamData", bwNum); 			
 			log.info("R_FUNC_EXEC: " + funcExpr);
 			
