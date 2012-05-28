@@ -17,13 +17,14 @@ public final class IBClient extends EClientSocket {
 //	private static String host = ConfigurationUtil.getBaseConfig().getString("ib.host"); // "127.0.0.1";
 //	private static long connectionTimeout = ConfigurationUtil.getBaseConfig().getInt("ib.connectionTimeout"); //10000;//
 
-	private static int clientId=9;
+	private static int clientId=8;
     //private static int port=7496;  // connect to TWS webclient
-    private static int port=7901;  // connect to IB gateway
+    private static int port=7901;  // connect to IB gateway remote tunnel
+    //private static int port=4001;  // connect to IB gateway local
 	private static String host ="127.0.0.1";
 	private static long connectionTimeout = 10000;
 
-	private static int defaultClientId = 7;  // for historical request to keep IBGW alive
+	private static int defaultClientId = 6;  // for historical request to keep IBGW alive
 	private static IBClient instance;
 
 	public IBClient(int clientId, IBDefaultAdapter wrapper) {

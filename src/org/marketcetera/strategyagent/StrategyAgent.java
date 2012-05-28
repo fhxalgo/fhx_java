@@ -97,6 +97,7 @@ System.out.println("XXXX Starting SA: " + args[0]);
         try {
             inAgent.init();
         } catch (Throwable e) {
+        	e.printStackTrace();
             Messages.LOG_ERROR_INITIALIZING_AGENT.error(StrategyAgent.class,
                     getMessage(e));
             Messages.LOG_ERROR_INITIALIZING_AGENT.debug(StrategyAgent.class,
