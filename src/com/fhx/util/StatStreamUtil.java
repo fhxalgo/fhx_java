@@ -59,7 +59,7 @@ public class StatStreamUtil {
 			}
 			
 			log.info("Setting R installPath to: (C:\\Program Files (x86)\\R\\R-2.10.1) George's tactical fix ");
-			installPath = "C:\\Program Files (x86)\\R\\R-2.10.1";
+			installPath = "C:\\opt\\R-2.15.0";
 			
 			return launchRserve(installPath+"\\bin\\R.exe");
 		}
@@ -105,7 +105,7 @@ public class StatStreamUtil {
 			// we need to fetch the output - some platforms will die if you don't ...
 			StreamHog errorHog = new StreamHog(p.getErrorStream(), false);
 			StreamHog outputHog = new StreamHog(p.getInputStream(), false);
-			if (!isWindows) /* on Windows the process will never return, so we cannot wait */
+			if (!isWindows && !debug) /* on Windows the process will never return, so we cannot wait */
 				p.waitFor();
 			log.info("call terminated, let us try to connect ...");
 		} catch (Exception x) {
@@ -176,12 +176,8 @@ public class StatStreamUtil {
 					md =tickStream.get(i);
 					value.add(md.getLatestBid().getPrice().add(md.getLatestOffer().getPrice()).divide(new BigDecimal(2)).doubleValue());
 					
-//					log.info("haha: md=" + md);
-//					log.info("haha: md.getTime=" + md.getTime());
-//					log.info("haha: SDF=" + SDF);
-//					log.info("haha: winNum=" + winNum);
 					if(!addOnce) {
-						timeStamp.add(SDF.format(md.getTime()));
+						timeStamp.add(SDF.format(md.getTime()));						
 						winNum.add(bwNum);
 					}
 				}
@@ -206,7 +202,7 @@ public class StatStreamUtil {
 					val = midPxNew.get(j);
 					sb.append(val.get(i)+"|");
 				}
-				log.info(sb.toString());
+				//log.info(sb.toString());
 			}	
 		
 		} catch (Exception e) {
