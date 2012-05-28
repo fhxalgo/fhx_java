@@ -1,0 +1,13 @@
+5/9
+
+1. Half Kelly's formula to adjust trade size
+2. Test order sender to IB
+3. Realtime position pull from IB and pass to R
+4. PNL/trade signal analytics
+5. Code cleanup - to be defined
+
+model:
+
+	- add PCA prediction model
+	- add factor to include short-term volatility
+	- Risk and sharp ratio calc 

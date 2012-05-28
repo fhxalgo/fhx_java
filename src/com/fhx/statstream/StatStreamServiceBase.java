@@ -145,11 +145,19 @@ public abstract class StatStreamServiceBase {
 			order.setSide(Side.Buy);
 		else if (type.equalsIgnoreCase("sell"))
 			order.setSide(Side.Sell);
-		else if (type.equalsIgnoreCase("sellshort"))
+		else if (type.equalsIgnoreCase("shortsell"))
 			order.setSide(Side.SellShort); 
 			
 		order.setSymbol(new MSymbol(symbol));
 		order.setTimeInForce(TimeInForce.Day);
+
+		log.info("NewIBOrderInfo - "+order.getSide()+" "+order.getQuantity()+" "+order.getSymbol()+" @ "+order.getPrice());
+
+		// turn on/off the model output if running simulation
+		if (Boolean.parseBoolean(config.getProperty("SIMULATION","false"))) {
+			log.info("Running in simulation mode, not sending orders to IB. ");				
+			return ;
+		}
 		
 		//Sending order to IB
 		log.info("Sending order to IB - "+order.getSide()+" "+order.getQuantity()+" "+order.getSymbol()+" @ "+order.getPrice());

@@ -43,23 +43,19 @@ public class StatStreamRealtimeService extends StatStreamServiceBase {
 			
 			// next process func call
 			conn.assign("streamData", REXP.createDataFrame(bwList));
+			String execFunc = config.getProperty("R_FUNC_EXEC");
 
-			//String corrFunc = "retList <- process_bw_ticks(streamData, "+bwNum+")";
-			String corrFunc = "retList <- test() ";
+			if("True".equals(config.getProperty("TEST_ORDER_MODE")))
+				execFunc = config.getProperty("R_FUNC_TEST_ORDER");
 			
-			log.info("calling: " + corrFunc);	
+			String funcExpr = String.format("%s(%s, %d)", execFunc, "streamData", bwNum); 			
+			log.info("R_FUNC_EXEC: " + funcExpr);
 			
-			REXP retVal = conn.parseAndEval(corrFunc);
-			//conn.assign("prev_value_list", retVal);  // update R var based on returned val
+			REXP retVal = conn.parseAndEval(funcExpr);
 		
-			log.info("retList from R: " +conn.eval("paste(capture.output(print(retList)),collapse='\\n')").asString());
-			
-			// turn on/off the model
-			if (Boolean.parseBoolean(config.getProperty("SIMULATION","false"))) {
-				log.info("Running in simulation mode, not sending orders to IB. ");
-				
-				return true;
-			}
+			String funcEval = config.getProperty("R_FUNC_EVAL");
+			log.info("R_FUNC_EVAL: " + funcEval);
+			log.info("order_list from R: " +conn.eval(funcEval).asString());
 			
 			//log.info(conn.eval("paste(capture.output(print(order_list)),collapse='\\n')").asString());
 			/*
@@ -68,22 +64,33 @@ public class StatStreamRealtimeService extends StatStreamServiceBase {
 			 * 		"Symbol",	"OrderType",	"Quantity",	"Price",	"BasicWinNum", "Time", "PnL"
 			 * 1	ABC			Buy				100			10			1			12:00:00	-
 			 * 1	CBA			Sell			100			10			1			12:00:00	-  
-			 */			
-			RList orderList = retVal.asList().at(0).asList();
+			 */	
+			if(retVal == null) {
+				log.error("retVal is null");
+				return false;
+			}
+			if(retVal.asList() == null) {
+				log.error("retVal.asList is null");
+				return false;
+			}
+			if(retVal.asList().at(0) == null) {
+				log.error("retVal.asList.at(0) is null");
+				return false;
+			}
+			
+			RList orderList = retVal.asList();
+			log.info("order list size = " + orderList.size());
 			if(orderList != null && orderList.size() > 0 ) {
-				int numRows = orderList.at(0).asStrings().length;
-				
 				String[] symbolColVal = orderList.at(0).asStrings();
 				String[] sideColVal = orderList.at(1).asStrings();
 				double[] qtyColVal = orderList.at(2).asDoubles();	//qty will be rounded into a round lot
 				double[] priceColVal = orderList.at(3).asDoubles(); //TODO: use mid-px at this point to place order
 
-				for(int i = 0; i < numRows; i++) {
-					addOrder(symbolColVal[i], 
-							 sideColVal[i], 
-							 (int)qtyColVal[i],
-							 priceColVal[i]);
-				}
+				log.info("model returned order "+symbolColVal[0]+"|"+sideColVal[0]+"|"+(int)qtyColVal[0]+"|"+priceColVal[0]);
+				addOrder(symbolColVal[0], 
+						 sideColVal[0], 
+						 (int)qtyColVal[0],
+						 priceColVal[0]);
 			}	
 			
 		} catch (RserveException e) {
