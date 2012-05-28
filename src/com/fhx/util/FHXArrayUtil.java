@@ -62,6 +62,7 @@ public class FHXArrayUtil {
 		twoDArrayStringMerge(finArray, test4);
 		
 		System.out.println(finArray);
+		System.out.print(finArray);
 	}
 	
 	
