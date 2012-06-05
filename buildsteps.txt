@@ -1,0 +1,9 @@
+1. cd ~/build
+# build fhx_model
+2. cd fhx_model && ant pull
+# build java
+3. cd ../fhx_java && ant deploy
+# check config
+4. cd ~/sa/conf
+# run server
+5. cd ~/sa && ./runIB.sh
