@@ -149,7 +149,6 @@ public class IBOrderService extends IBOrderEventListener {
 		ibOrder.m_action = order.getSide().name();
 		ibOrder.m_orderType = IBUtil.getIBOrderType(order);
 		ibOrder.m_transmit = true;
-		ibOrder.m_orderType = OrderType.Market.toString();
 
 		// handling for financial advisor accounts
 		if (faEnabled) {
@@ -164,9 +163,9 @@ public class IBOrderService extends IBOrderEventListener {
 		}
 
 		//set the limit price if order is a limit order or stop limit order
-		//if (order.getOrderType().equals(OrderType.Limit)) {
-		//	ibOrder.m_lmtPrice = order.getPrice().doubleValue();
-		//}
+		if (order.getOrderType().equals(OrderType.Limit)) {
+			ibOrder.m_lmtPrice = order.getPrice().doubleValue();
+		}
 
 		//set the stop price if order is a stop order or stop limit order
 		//if (order instanceof StopOrderInterface) {
