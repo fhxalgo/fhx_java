@@ -135,7 +135,8 @@ public abstract class StatStreamServiceBase {
 		OrderSingle order = Factory.getInstance().createOrderSingle();
 		order.setOrderID(new OrderID(orderNumber+""));
 		
-		order.setOrderType(OrderType.Limit);
+		//order.setOrderType(OrderType.Limit);
+		order.setOrderType(OrderType.Market);
 		order.setQuantity(new BigDecimal(qty));	
 		
 		double pxDbl = Double.parseDouble(new DecimalFormat("#.##").format(price));
