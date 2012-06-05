@@ -217,6 +217,7 @@ https://github.com/fhxalgo/fhx_model
     <copy todir="/home/hfxdev/sa/conf">
       <fileset dir="output/conf">
         <include name="*.properties" />
+      	<include name="*.csv" />
       </fileset>
     </copy>
     <copy todir="/export/FHX/fhx_model">
