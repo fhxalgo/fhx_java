@@ -8,6 +8,8 @@ import java.util.Vector;
 
 import org.apache.log4j.Logger;
 
+import com.fhx.service.ib.order.IBOrderStateWrapper;
+import com.fhx.service.ib.order.IBOrderStatus;
 import com.ib.client.Contract;
 import com.ib.client.ContractDetails;
 import com.ib.client.EWrapper;
@@ -234,6 +236,8 @@ public class IBDefaultAdapter implements EWrapper {
 		// propagateToIBOrderService()
 		IBEventData data = new IBEventData("xxxx orderId=" + reqId +", execution=" +execution.toString(), IBEventType.ExecDetails);
 		IBEventServiceImpl.getEventService().fireIBEvent(data);
+		
+		IBOrderService.getInstance().getExecOrders().put(Integer.parseInt(execution.m_execId), execution);
 	}
 
 	@Override
@@ -269,7 +273,8 @@ public class IBDefaultAdapter implements EWrapper {
 		IBEventData data = new IBEventData(order, IBEventType.OpenOrder);
 		IBEventServiceImpl.getEventService().fireIBEvent(data);
 		
-		//System.exit(-1);
+		// put open order detail into the map to keep track
+		IBOrderService.getInstance().addToOpenOrders(order);
 	}
 
 	@Override
@@ -285,6 +290,25 @@ public class IBDefaultAdapter implements EWrapper {
 		
 		IBEventData data = new IBEventData(orderId+"|"+status, IBEventType.OrderStatus);
 		IBEventServiceImpl.getEventService().fireIBEvent(data);
+		
+		if(IBOrderStatus.Filled.toString().equals(status)) {
+			log.info("Moving orderId "+orderId+" from open to exec order list");
+			IBOrderService.getInstance().removeOpenOrder(orderId);
+			IBOrderService.getInstance().addToFilledOrders(orderId, 
+					 new IBOrderStateWrapper(orderId, status, filled, remaining, avgFillPrice, permId, parentId, lastFillPrice, clientId, whyHeld));
+		}
+		else if(IBOrderStatus.Cancelled.toString().equals(status)) {
+			IBOrderService.getInstance().removeOpenOrder(orderId);
+			IBOrderService.getInstance().addToCancelledOrders(orderId, 
+					 new IBOrderStateWrapper(orderId, status, filled, remaining, avgFillPrice, permId, parentId, lastFillPrice, clientId, whyHeld));
+		}
+		else if(IBOrderStatus.Inactive.toString().equals(status)) {
+			log.error("Order is inactive due to system, exchange or other issues, details: "+
+					 "orderId|"+orderId+"||status|"+status+"||filled|"+filled+"||remaining|"+remaining+"||avgFillPrice|"+avgFillPrice+
+					 "||permId|"+permId+"||parentId|"+parentId+"||lastFillPrice|"+lastFillPrice+"||clientId|"+clientId+"||whyHeld|"+whyHeld);
+			
+			//Try to cancel the order if it's stuck in Inactive state
+		}
 	}
 
 	@Override
@@ -365,5 +389,8 @@ public class IBDefaultAdapter implements EWrapper {
 	@Override
 	public void updatePortfolio(Contract contract, int position, double marketPrice, double marketValue, double averageCost, double unrealizedPNL,
 			double realizedPNL, String accountName) {
+		// This method is called if we subscribe to account and position updates
+		log.info("Got a position update: symbol|" + contract.m_symbol + "|open qty" + position);
+		IBOrderService.getInstance().updatePosition(contract.m_symbol, position);
 	}
 }

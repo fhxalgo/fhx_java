@@ -15,6 +15,7 @@ public class IBOrderSender implements Runnable {
 	private static Logger log = Logger.getLogger(IBOrderService.class);
 	
 	private IBOrderService ors = IBOrderService.getInstance();
+	private IBOrderSenderHelper orderHelper = IBOrderSenderHelper.getInstance();
 	private BlockingQueue<OrderSingle> m_orderQ;
 	
 	private static final ExecutorService sNotifierPool = Executors.newCachedThreadPool();
@@ -39,7 +40,7 @@ public class IBOrderSender implements Runnable {
 		        sNotifierPool.submit(new Runnable() {
 		               public void run() {
 		            	   try {
-		            		   ors.sendOrModifyOrder(order);
+		            		   orderHelper.sendOrModifyOrder(order);
 		            	   } catch (Exception e) {
 		            		   // TODO Auto-generated catch block
 		            		   e.printStackTrace();
