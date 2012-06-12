@@ -10,7 +10,7 @@ Note: 1,2,3 need to run as root
 
 4. start FHX_IBServer as hfxdev: hfxdev@hfxalgo:/home/hfxdev/FHX_IBService-v1.0/runIBHist.sh
 
-5. start ors as root: hfxdev@hfxalgo:/home/hfxdev/ors/bin/ors.sh 
+5. start ors as hfxdev: hfxdev@hfxalgo:/home/hfxdev/ors/bin/ors.sh 
 
 6. start sa as hfxdev: hfxdev@hfxalgo:/home/hfxdev/sa/runIB.sh (this is running under cron daily) 
 
