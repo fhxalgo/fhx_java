@@ -136,7 +136,7 @@ public class IBOrderService extends IBOrderEventListener {
 	// order management
 	private Map<Integer, Order> openOrders = new HashMap<Integer, Order>();
 	private Map<Integer, IBOrderStateWrapper> fillOrders = new HashMap<Integer, IBOrderStateWrapper>();
-	private Map<Integer, Execution> executionDetails = new HashMap<Integer, Execution>();
+	private Map<String, Execution> executionDetails = new HashMap<String, Execution>();
 	private Map<Integer, IBOrderStateWrapper> cancelledOrders = new HashMap<Integer, IBOrderStateWrapper>();
 	private static Map<String, Integer> m_ibOpenPositions = new HashMap<String, Integer>();
 	
@@ -144,7 +144,7 @@ public class IBOrderService extends IBOrderEventListener {
 		return Collections.unmodifiableMap(openOrders);
 	}
 
-	public synchronized Map<Integer, Execution> getExecOrders() {
+	public synchronized Map<String, Execution> getExecOrders() {
 		return Collections.unmodifiableMap(executionDetails);
 	}
 

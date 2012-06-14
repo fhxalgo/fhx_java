@@ -237,7 +237,7 @@ public class IBDefaultAdapter implements EWrapper {
 		IBEventData data = new IBEventData("xxxx orderId=" + reqId +", execution=" +execution.toString(), IBEventType.ExecDetails);
 		IBEventServiceImpl.getEventService().fireIBEvent(data);
 		
-		IBOrderService.getInstance().getExecOrders().put(Integer.parseInt(execution.m_execId), execution);
+		IBOrderService.getInstance().getExecOrders().put(execution.m_execId, execution);
 	}
 
 	@Override
