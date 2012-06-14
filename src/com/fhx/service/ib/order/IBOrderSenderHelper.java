@@ -108,7 +108,7 @@ public class IBOrderSenderHelper {
 	public void sendOrModifyOrder(OrderSingle order) throws Exception {
 
 		if (!(client.getIbAdapter().getState().equals(ConnectionState.READY) || client.getIbAdapter().getState().equals(ConnectionState.SUBSCRIBED))) {
-			log.error("transaction cannot be executed, because IB is not connected, found state " + client.getIbAdapter().getState().equals(ConnectionState.READY.toString());
+			log.error("transaction cannot be executed, because IB is not connected, found state " + client.getIbAdapter().getState().equals(ConnectionState.READY.toString()));
 			return;
 		}
 		
