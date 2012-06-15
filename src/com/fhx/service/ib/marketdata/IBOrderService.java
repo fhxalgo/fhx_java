@@ -3,6 +3,7 @@ package com.fhx.service.ib.marketdata;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
@@ -134,18 +135,22 @@ public class IBOrderService extends IBOrderEventListener {
 	
 	
 	// order management
-	private Map<Integer, Order> openOrders = new HashMap<Integer, Order>();
-	private Map<Integer, IBOrderStateWrapper> fillOrders = new HashMap<Integer, IBOrderStateWrapper>();
-	private Map<String, Execution> executionDetails = new HashMap<String, Execution>();
-	private Map<Integer, IBOrderStateWrapper> cancelledOrders = new HashMap<Integer, IBOrderStateWrapper>();
-	private static Map<String, Integer> m_ibOpenPositions = new HashMap<String, Integer>();
+	private Map<Integer, Order> openOrders = new ConcurrentHashMap<Integer, Order>();
+	private Map<Integer, IBOrderStateWrapper> fillOrders = new ConcurrentHashMap<Integer, IBOrderStateWrapper>();
+	private Map<String, Execution> executionDetails = new ConcurrentHashMap<String, Execution>();
+	private Map<Integer, IBOrderStateWrapper> cancelledOrders = new ConcurrentHashMap<Integer, IBOrderStateWrapper>();
+	private static Map<String, Integer> m_ibOpenPositions = new ConcurrentHashMap<String, Integer>();
 	
 	public synchronized Map<Integer, Order> getOpenOrders() {
 		return Collections.unmodifiableMap(openOrders);
 	}
 
-	public synchronized Map<String, Execution> getExecOrders() {
-		return Collections.unmodifiableMap(executionDetails);
+	// should return a copy of this, i.e. Map copy = new LinkedHashMap(m);
+//	public synchronized Map<String, Execution> getExecOrders() {
+//		return Collections.unmodifiableMap(executionDetails);
+//	}
+	public void addExecOrders(String execId, Execution execution) {
+		this.executionDetails.put(execId, execution);
 	}
 
 	public synchronized Map<Integer, IBOrderStateWrapper> getFillOrders() {
