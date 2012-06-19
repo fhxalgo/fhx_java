@@ -31,6 +31,15 @@ public class IBOrderSender implements Runnable {
 	public void run() {
 		log.info("Starting IBOrderSender thread");
 		
+		try {
+			orderHelper.reqOpenOrders();
+			orderHelper.reqAccountUpdates();
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+			System.exit(1);
+		}
+		
 		while (true) {
 			try {
 				final OrderSingle order = m_orderQ.take();
