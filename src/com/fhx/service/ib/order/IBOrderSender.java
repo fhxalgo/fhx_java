@@ -35,12 +35,10 @@ public class IBOrderSender implements Runnable {
 			// sleep 2 seconds for IB to connect, which takes a while
 			Thread.sleep(5000);
 			
-			orderHelper.reqOpenOrders();
-			orderHelper.reqAccountUpdates();
+			orderHelper.requestIBCallbacks();
 		} catch (Exception e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
-			System.exit(1);
 		}
 		
 		while (true) {

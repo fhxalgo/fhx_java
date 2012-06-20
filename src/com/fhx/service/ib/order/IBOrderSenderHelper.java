@@ -71,6 +71,27 @@ public class IBOrderSenderHelper {
 			return new IBOrderSenderHelper();
 	}
 
+	public void requestIBCallbacks() {
+		try {
+			if(isIBConnected()) {
+				reqOpenOrders();
+				reqAccountUpdates();
+			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	private boolean isIBConnected() {
+		if (client ==null || 
+		    (!(client.getIbAdapter().getState().equals(ConnectionState.READY)) && !(client.getIbAdapter().getState().equals(ConnectionState.SUBSCRIBED)))) {
+			log.error("transaction cannot be executed, because IB is not connected, found state " + client.getIbAdapter().getState().toString());
+			return false;
+		}
+		return true;
+	}
+	
 	public void sendNewOrder(String symbol, String type, int size, double price) throws Exception {
 
 		int orderNumber = RequestIDGenerator.singleton().getNextOrderId();
