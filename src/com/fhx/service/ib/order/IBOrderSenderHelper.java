@@ -84,8 +84,11 @@ public class IBOrderSenderHelper {
 	}
 	
 	private boolean isIBConnected() {
-		if (client ==null || 
-		    (!(client.getIbAdapter().getState().equals(ConnectionState.READY)) && !(client.getIbAdapter().getState().equals(ConnectionState.SUBSCRIBED)))) {
+		if(client == null) {
+			log.error("Found null instance of ib client");
+			return false;
+		}
+		if(!(client.getIbAdapter().getState().equals(ConnectionState.READY)) && !(client.getIbAdapter().getState().equals(ConnectionState.SUBSCRIBED))) {
 			log.error("transaction cannot be executed, because IB is not connected, found state " + client.getIbAdapter().getState().toString());
 			return false;
 		}
