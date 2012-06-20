@@ -32,6 +32,9 @@ public class IBOrderSender implements Runnable {
 		log.info("Starting IBOrderSender thread");
 		
 		try {
+			// sleep 2 seconds for IB to connect, which takes a while
+			Thread.sleep(5000);
+			
 			orderHelper.reqOpenOrders();
 			orderHelper.reqAccountUpdates();
 		} catch (Exception e1) {

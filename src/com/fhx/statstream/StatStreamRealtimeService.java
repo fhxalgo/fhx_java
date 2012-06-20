@@ -13,6 +13,7 @@ import org.rosuda.REngine.REngineException;
 import org.rosuda.REngine.RList;
 import org.rosuda.REngine.Rserve.RserveException;
 
+import com.fhx.service.ib.marketdata.IBOrderService;
 import com.fhx.util.StatStreamUtil;
 
 public class StatStreamRealtimeService extends StatStreamServiceBase {
@@ -29,7 +30,12 @@ public class StatStreamRealtimeService extends StatStreamServiceBase {
 
 	@Override
 	public boolean tick(Map<String, List<LatestMarketData>> aTick, int bwNum) {
-		log.info("Processing basic window " + bwNum);
+		log.info("Dump all open positions at basic window " + bwNum);
+		Map<String, Integer> positions = IBOrderService.getInstance().getCurrenctPositions();
+		
+		for(Map.Entry<String, Integer> pos : positions.entrySet()) {
+			log.info("pos -> " + pos.getKey() + "|" + pos.getValue());
+		}
 		
 		RList bwList = StatStreamUtil.getBasicWindowRList(aTick, symbols, bwNum, basicWindowSize);
 

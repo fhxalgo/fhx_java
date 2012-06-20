@@ -390,7 +390,7 @@ public class IBDefaultAdapter implements EWrapper {
 	public void updatePortfolio(Contract contract, int position, double marketPrice, double marketValue, double averageCost, double unrealizedPNL,
 			double realizedPNL, String accountName) {
 		// This method is called if we subscribe to account and position updates
-		log.info("Got a position update: symbol|" + contract.m_symbol + "|open qty" + position);
+		log.info("Got a position update: symbol|" + contract.m_symbol + "|open qty|" + position);
 		IBOrderService.getInstance().updatePosition(contract.m_symbol, position);
 	}
 }
