@@ -7,6 +7,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
 
 import com.ib.client.Contract;
 import com.ib.client.ContractDetails;
@@ -37,6 +38,7 @@ public class IBFeedManager implements EWrapper {
 	}
 	
 	public IBFeedManager(InteractiveBrokersFeed inFeed) {
+		PropertyConfigurator.configure("conf/log4j.properties");
 		feed=inFeed;
 		clientSocket=new EClientSocket(this);
 	}
