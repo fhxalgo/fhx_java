@@ -27,7 +27,7 @@ public class IBFeedManager implements EWrapper {
 	private Hashtable<Integer, String> requestSymbols=new Hashtable<Integer, String>();
 	private Hashtable<String, LatestMarketData> latestData=new Hashtable<String, LatestMarketData>();
 	
-	private final AtomicInteger requestCounter=new AtomicInteger(-500);
+	private final AtomicInteger requestCounter=new AtomicInteger(1);
 	private final AtomicLong tickCounter=new AtomicLong(0);
 	private boolean histRequestFlag = false;
 	private Contract histReqContract;
