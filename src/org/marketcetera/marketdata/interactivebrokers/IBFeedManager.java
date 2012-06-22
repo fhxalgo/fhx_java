@@ -1,6 +1,7 @@
 package org.marketcetera.marketdata.interactivebrokers;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.Hashtable;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -44,6 +45,7 @@ public class IBFeedManager implements EWrapper {
 		return clientSocket.isConnected();
 	}
 	public void connect(String inHost, int inPort, int inClientId) {
+		System.out.println("xxxx IBFeedManager.connect: inHost=" + inHost + ", port=" + inPort + ", inClientId=" + inClientId);
 		clientSocket.eConnect(inHost, inPort , inClientId);
 	}
 	public void disconnect() {
@@ -61,10 +63,20 @@ public class IBFeedManager implements EWrapper {
 			requestSymbols.put(tickerId, contract.m_symbol);
 			getLatestMarketData(contract.m_symbol);
 
-			log.info(String.format("XXXX IBFeedManager->requestMarketData() contract: %s, id: %d, type: %s \n", 
-					contract.m_symbol, tickerId, contract.m_secType));
-
-			clientSocket.reqMktData(tickerId, contract, inGenericTickList, inSnapshot);	
+			String logStr = String.format("XXXX IBFeedManager->requestMarketData() contract: %s, id: %d, type: %s \n", 
+					contract.m_symbol, tickerId, contract.m_secType);
+			log.info(logStr);
+			
+			System.out.println("XXXX: " + logStr);
+			clientSocket.reqMktData(tickerId, contract, inGenericTickList, inSnapshot);
+			
+			// pause
+			try {
+				Thread.sleep(100);
+			}
+			catch(Exception e) {
+				e.printStackTrace();
+			}
 			
 			// try historical data files yyyymmdd hh:mm:ss tmz
 			//clientSocket.reqHistoricalData(tickerId, contract, "20111206 16:00:00", "1 D", "1 min", "TRADES", 1, 1);
@@ -125,7 +137,7 @@ public class IBFeedManager implements EWrapper {
 	@Override
 	public void currentTime(long time) {
 		// TODO Auto-generated method stub
-		
+		System.out.println("xxxx IBFeedManager.currentTime: " + new Date(time));
 	}
 
 	@Override
@@ -137,7 +149,7 @@ public class IBFeedManager implements EWrapper {
 	@Override
 	public void execDetails(int reqId, Contract contract, Execution execution) {
 		// TODO Auto-generated method stub
-		
+		System.out.println("xxxx IBFeedManager.execDetails(int reqId=" + reqId + ", Contract contract=" + contract.toString() + ", Execution execution=" + execution.toString() + ")" ); 
 	}
 
 	@Override
@@ -158,8 +170,8 @@ public class IBFeedManager implements EWrapper {
 			double WAP, boolean hasGaps) {
 		
 		// TODO Auto-generated method stub
-		log.info(String.format("xxxx historicalData: reqId=%d, Symbol=%s, date=%s,  open=%f, close=%f, volume=%d, count=%d, WAP=%f, hadGaps=%s \n",
-				reqId, requestSymbols.get(reqId), date, open, close, volume, count, WAP, String.valueOf(hasGaps)));
+		//log.info(String.format("xxxx historicalData: reqId=%d, Symbol=%s, date=%s,  open=%f, close=%f, volume=%d, count=%d, WAP=%f, hadGaps=%s \n",
+		//		reqId, requestSymbols.get(reqId), date, open, close, volume, count, WAP, String.valueOf(hasGaps)));
 		
 	}
 
@@ -172,7 +184,7 @@ public class IBFeedManager implements EWrapper {
 	@Override
 	public void nextValidId(int orderId) {
 		// TODO Auto-generated method stub
-		
+		System.out.println("xxxx IBFeedManager.nextValidId: " + orderId);
 	}
 
 	@Override
@@ -329,7 +341,7 @@ public class IBFeedManager implements EWrapper {
 	@Override
 	public void tickString(int tickerId, int tickType, String value) {
 		// TODO Auto-generated method stub
-		
+		System.out.println(String.format("xxxx IBFeedManager.tickString(int tickerId=%d, int tickType=%d, String value=%s)", tickerId, tickType, value));
 	}
 
 	@Override
@@ -383,19 +395,20 @@ public class IBFeedManager implements EWrapper {
 	@Override
 	public void error(Exception e) {
 		// TODO Auto-generated method stub
-		
+		System.out.println(String.format("xxxx IBFeedManager.error(Exception e=%s)", e.getMessage()));		
 	}
 
 	@Override
 	public void error(String str) {
 		// TODO Auto-generated method stub
-		
+		System.out.println(String.format("xxxx IBFeedManager.error(String str=%s)", str));
 	}
 
 	@Override
 	public void error(int id, int errorCode, String errorMsg) {
 		// TODO Auto-generated method stub
-		log.info(String.format("xxxx error(int id=%d, int errorCode=%d, String errorMsg=%s \n", id, errorCode, errorMsg));
+		log.info(String.format("xxxx error(int id=%d, int errorCode=%d, String errorMsg=%s)", id, errorCode, errorMsg));
+		System.out.println(String.format("xxxx IBFeedManager.error(int id=%d, int errorCode=%d, String errorMsg=%s)", id, errorCode, errorMsg));
 	}
 
 	@Override
