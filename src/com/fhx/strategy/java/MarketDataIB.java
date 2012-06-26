@@ -50,10 +50,10 @@ public class MarketDataIB extends Strategy {
 	private Hashtable<String, LatestMarketData> latestDataCache=new Hashtable<String, LatestMarketData>();
 	private BlockingQueue<Hashtable<String, LatestMarketData>> mdQueue;
 	private MarketDataHandler mdHandle;
-	private int tickFrequency = Integer.parseInt(System.getProperty("tickFrequency", "1")); // in seconds
+	public int tickFrequency = Integer.parseInt(System.getProperty("tickFrequency", "1")); // in seconds
+	public static int LOGTICKS = Integer.parseInt(System.getProperty("LOGTICKS", "10000")); // log every so many ticks
 	
 	private static final ExecutorService sNotifierPool = Executors.newCachedThreadPool();
-	
 	private AtomicLong tickCount = new AtomicLong(0);
 	
     /**
@@ -136,7 +136,7 @@ public class MarketDataIB extends Strategy {
     public void onAsk(AskEvent inAsk) {
     	tickCount.getAndIncrement();
 
-    	if (tickCount.get() % 5000 == 0) {
+    	if (tickCount.get() % LOGTICKS == 0) {
     		log.info(inAsk);
     	}
         LatestMarketData data = latestDataCache.get(inAsk.getSymbolAsString());
@@ -153,7 +153,7 @@ public class MarketDataIB extends Strategy {
     public void onBid(BidEvent inBid) {
     	tickCount.getAndIncrement();
     	
-    	if (tickCount.get() % 2000 == 0) {
+    	if (tickCount.get() % LOGTICKS == 0) {
     		log.info(inBid);
     	}
         LatestMarketData data = latestDataCache.get(inBid.getSymbolAsString());
@@ -176,7 +176,7 @@ public class MarketDataIB extends Strategy {
         //latestData.put(inTrade.getSymbolAsString(), data);
         
     	tickCount.getAndIncrement();    	
-    	if (tickCount.get() % 1000 ==0) {
+    	if (tickCount.get() % LOGTICKS ==0) {
     		String symbol= inTrade.getSymbolAsString();
     		
     		StringBuilder sb = new StringBuilder();
