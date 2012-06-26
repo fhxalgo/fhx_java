@@ -140,6 +140,11 @@ public class IBOrderSenderHelper {
 
 		com.ib.client.Order ibOrder = new com.ib.client.Order();
 		ibOrder.m_action = order.getSide().name();
+		
+		// for short sell switch the string
+		if(order.getSide() == Side.SellShort)
+			ibOrder.m_action = "SSHORT";
+		
 		ibOrder.m_orderType = IBUtil.getIBOrderType(order);
 		ibOrder.m_transmit = true;
 

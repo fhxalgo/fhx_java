@@ -1,6 +1,6 @@
 restart all - in case server needs to be rebooted.  Should put 1~5 into a script.
 
-1. start x11vnc server: root@hfxalgo:/home/root/script/x11vnc_start
+1. start x11vnc server: root@hfxalgo:/root/bin/x11vnc_start
 
 2. start MySql server: root@hfxalgo:/etc/init.d/mysql.server start
 

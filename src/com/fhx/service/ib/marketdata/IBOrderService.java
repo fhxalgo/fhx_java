@@ -125,7 +125,7 @@ public class IBOrderService extends IBOrderEventListener {
 		{
 			Order o = ord.getValue();
 			sb.append("orderId="+ord.getKey());
-			sb.append(",side="+o.m_orderType);
+			sb.append(",side="+o.m_action);
 			sb.append(",totalQty="+o.m_totalQuantity);
 			sb.append(",price="+o.m_lmtPrice);
 			sb.append("\n");
