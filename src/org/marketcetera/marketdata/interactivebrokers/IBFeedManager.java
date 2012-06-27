@@ -65,7 +65,7 @@ public class IBFeedManager implements EWrapper {
 			requestSymbols.put(tickerId, contract.m_symbol);
 			getLatestMarketData(contract.m_symbol);
 
-			String logStr = String.format("XXXX IBFeedManager->requestMarketData() contract: %s, id: %d, type: %s \n", 
+			String logStr = String.format("XXXX IBFeedManager->requestMarketData() contract: %s, id: %d, type: %s", 
 					contract.m_symbol, tickerId, contract.m_secType);
 			log.info(logStr);
 			
@@ -74,7 +74,7 @@ public class IBFeedManager implements EWrapper {
 			
 			// pause
 			try {
-				Thread.sleep(100);
+				Thread.sleep(200);
 			}
 			catch(Exception e) {
 				e.printStackTrace();
@@ -412,7 +412,8 @@ public class IBFeedManager implements EWrapper {
 	@Override
 	public void error(int id, int errorCode, String errorMsg) {
 		// TODO Auto-generated method stub
-		log.info(String.format("xxxx error(int id=%d, int errorCode=%d, String errorMsg=%s)", id, errorCode, errorMsg));
+		String symbol=getSymbolFromTickerId(id);
+		log.info(String.format("xxxx error(int id=%d, symbol=%s, int errorCode=%d, String errorMsg=%s)", id, symbol, errorCode, errorMsg));
 		System.out.println(String.format("xxxx IBFeedManager.error(int id=%d, int errorCode=%d, String errorMsg=%s)", id, errorCode, errorMsg));
 	}
 
