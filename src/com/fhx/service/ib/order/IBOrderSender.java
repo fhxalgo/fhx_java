@@ -44,7 +44,7 @@ public class IBOrderSender implements Runnable {
 		while (true) {
 			try {
 				final OrderSingle order = m_orderQ.take();
-				log.info("took next order off q: " + order.getSide()+" "+order.getSymbol()+" "+order.getQuantity()+"@"+order.getPrice());
+				log.info("took next order off q: " + order.getSide()+" "+order.getSymbol()+" "+order.getQuantity()+"@"+order.getPrice().doubleValue());
 				
 				// hand the notification chore to a thread from the thread pool
 		        sNotifierPool.submit(new Runnable() {
