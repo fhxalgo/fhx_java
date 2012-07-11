@@ -1,5 +1,7 @@
 package com.fhx.service.ib.marketdata;
 
+import java.util.EventObject;
+
 import javax.swing.event.EventListenerList;
 
 import org.apache.log4j.LogManager;
@@ -46,6 +48,7 @@ public class IBEventServiceImpl {
 		if (listenerList == null)
 			return ;
 		
+		log.info("IBEventData: " + event);
 		Object[] listeners;
 		IBEventType type = event.getEventType();		
 		

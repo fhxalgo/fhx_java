@@ -2,6 +2,7 @@ package com.fhx.service.ib.marketdata;
 
 import java.io.EOFException;
 import java.net.SocketException;
+import java.util.EventObject;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Vector;
@@ -231,10 +232,18 @@ public class IBDefaultAdapter implements EWrapper {
 
 	@Override
 	public void execDetails(int reqId, Contract contract, Execution execution) {
-		log.info("execDetails(int reqId=" + reqId + ", Contract contract=" + contract.toString() + ", Execution execution=" + execution.toString() + ")" ); 
+		String execDetails = String.format("%d,%s,%s,%f,%d,%s,%d", 
+				execution.m_clientId, 
+				execution.m_execId, 
+				execution.m_orderId, 
+				execution.m_price, 
+				execution.m_shares, 
+				execution.m_side, 
+				execution.m_cumQty);
+		log.info("execDetails(int reqId=" + reqId + ", Contract contract=" + contract.m_symbol + ", Execution execution=" + execDetails + ")" ); 
 		
 		// propagateToIBOrderService()
-		IBEventData data = new IBEventData("xxxx orderId=" + reqId +", execution=" +execution.toString(), IBEventType.ExecDetails);
+		IBEventData data = new IBEventData("xxxx orderId=" + reqId +", execution=" +execDetails, IBEventType.ExecDetails);
 		IBEventServiceImpl.getEventService().fireIBEvent(data);
 		
 		IBOrderService.getInstance().addExecOrders(execution.m_execId, execution);
