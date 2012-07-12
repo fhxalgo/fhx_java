@@ -37,6 +37,12 @@ public class StatStreamRealtimeService extends StatStreamServiceBase {
 			log.info("pos -> " + pos.getKey() + "|" + pos.getValue());
 		}
 		
+		if(bwNum == 1)
+		{
+			log.info("Basic window 1: Start of day clearing of all remaining positions");
+			generateStartOfDayTrades(positions);
+		}
+		
 		RList bwList = StatStreamUtil.getBasicWindowRList(aTick, symbols, bwNum, basicWindowSize);
 
 		try {
@@ -112,6 +118,21 @@ public class StatStreamRealtimeService extends StatStreamServiceBase {
 		}
 		
 		return true;
+	}
+
+	private void generateStartOfDayTrades(Map<String, Integer> positions) {
+		for(Map.Entry<String, Integer> pos : positions.entrySet()) {
+			String symbol = pos.getKey();
+			Integer qty = pos.getValue();
+			
+			String side = "Sell";
+			if(qty < 0)
+				side = "Buy";
+				
+			log.info("Start of day order to " + side + " " + qty + " @mkt");
+			addOrder(symbol, side, qty.intValue(), 0.0);					 
+		}
+		
 	}
 	
 }

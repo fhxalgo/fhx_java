@@ -143,7 +143,7 @@ public class IBOrderSenderHelper {
 		
 		// for short sell switch the string
 		if(order.getSide() == Side.SellShort)
-			ibOrder.m_action = "SSHORT";
+			ibOrder.m_action = "Sell";
 		
 		ibOrder.m_orderType = IBUtil.getIBOrderType(order);
 		ibOrder.m_transmit = true;
