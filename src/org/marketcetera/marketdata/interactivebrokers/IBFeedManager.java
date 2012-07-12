@@ -38,7 +38,7 @@ public class IBFeedManager implements EWrapper {
 	}
 	
 	public IBFeedManager(InteractiveBrokersFeed inFeed) {
-		PropertyConfigurator.configure("conf/log4j.properties");
+		PropertyConfigurator.configure("/home/hfxdev/sa/conf/log4j.properties");
 		feed=inFeed;
 		clientSocket=new EClientSocket(this);
 	}
@@ -65,7 +65,7 @@ public class IBFeedManager implements EWrapper {
 			requestSymbols.put(tickerId, contract.m_symbol);
 			getLatestMarketData(contract.m_symbol);
 
-			String logStr = String.format("XXXX IBFeedManager->requestMarketData() contract: %s, id: %d, type: %s \n", 
+			String logStr = String.format("XXXX IBFeedManager->requestMarketData() contract: %s, id: %d, type: %s", 
 					contract.m_symbol, tickerId, contract.m_secType);
 			log.info(logStr);
 			
@@ -74,7 +74,7 @@ public class IBFeedManager implements EWrapper {
 			
 			// pause
 			try {
-				Thread.sleep(100);
+				Thread.sleep(200);
 			}
 			catch(Exception e) {
 				e.printStackTrace();
@@ -264,6 +264,7 @@ public class IBFeedManager implements EWrapper {
 		log.info("xxxx compute tickOpeion.");
 			
 	}
+	
 	private String getSymbolFromTickerId(int tickerId) {
 		
 		if (requestSymbols.containsKey(tickerId)) {
@@ -272,12 +273,14 @@ public class IBFeedManager implements EWrapper {
 			return "";
 		}
 	}
+	
 	private LatestMarketData getLatestMarketData(String symbol) {
 		if (!latestData.containsKey(symbol.toUpperCase())) {
 			latestData.put(symbol.toUpperCase(), new LatestMarketData(symbol.toUpperCase()));
 		} 
 		return latestData.get(symbol.toUpperCase());
 	}
+	
 	@Override
 	public void tickPrice(int tickerId, int field, double inPrice, int canAutoExecute) {
 
@@ -343,7 +346,7 @@ public class IBFeedManager implements EWrapper {
 	@Override
 	public void tickString(int tickerId, int tickType, String value) {
 		// TODO Auto-generated method stub
-		System.out.println(String.format("xxxx IBFeedManager.tickString(int tickerId=%d, int tickType=%d, String value=%s)", tickerId, tickType, value));
+		//System.out.println(String.format("xxxx IBFeedManager.tickString(int tickerId=%d, int tickType=%d, String value=%s)", tickerId, tickType, value));
 	}
 
 	@Override
@@ -409,7 +412,8 @@ public class IBFeedManager implements EWrapper {
 	@Override
 	public void error(int id, int errorCode, String errorMsg) {
 		// TODO Auto-generated method stub
-		log.info(String.format("xxxx error(int id=%d, int errorCode=%d, String errorMsg=%s)", id, errorCode, errorMsg));
+		String symbol=getSymbolFromTickerId(id);
+		log.info(String.format("xxxx error(int id=%d, symbol=%s, int errorCode=%d, String errorMsg=%s)", id, symbol, errorCode, errorMsg));
 		System.out.println(String.format("xxxx IBFeedManager.error(int id=%d, int errorCode=%d, String errorMsg=%s)", id, errorCode, errorMsg));
 	}
 

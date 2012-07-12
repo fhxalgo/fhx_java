@@ -166,7 +166,8 @@ public class IBOrderSenderHelper {
 		// place the order through IBClient
 		client.placeOrder(Integer.parseInt(order.getOrderID().getValue()), contract, ibOrder);
 
-		log.info("placed or modified order: Id " + order.getOrderID().toString());
+		log.info("placed or modified order Id=" + order.getOrderID().toString());
+		log.info("placed or modified order details: " + order.toString());
 	}
 	
 	public void cancelOrder(OrderSingle order) throws Exception {
