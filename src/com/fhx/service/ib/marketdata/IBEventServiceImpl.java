@@ -81,6 +81,14 @@ public class IBEventServiceImpl {
 	        	}
 	        	break;
 	        	
+	        case UpdatePortfolio:
+	        	listeners = listenerList.getListeners(IBOrderService.class);		        	
+	        	for (Object l: listeners) {	
+	        		log.info("IBEventServiceImpl: fireIBEvent("+type+")");
+	        		((IBOrderService) l).onIBEvent(event);
+	        	}
+	        	break;
+	        	
         	default: 
         		break;
         }

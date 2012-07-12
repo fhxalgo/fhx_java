@@ -152,7 +152,6 @@ public abstract class StatStreamServiceBase {
 		order.setSymbol(new MSymbol(symbol));
 		order.setTimeInForce(TimeInForce.Day);
 
-		//log.info("NewIBOrderInfo - "+order.getSide()+" "+order.getQuantity()+" "+order.getSymbol()+" @ "+order.getPrice().doubleValue());
 		log.info("NewIBOrderInfo - " + order.toString());
 
 		// turn on/off the model output if running simulation

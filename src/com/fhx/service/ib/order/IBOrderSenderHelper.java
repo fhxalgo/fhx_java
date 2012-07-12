@@ -65,10 +65,10 @@ public class IBOrderSenderHelper {
 	}
 	
 	public static IBOrderSenderHelper getInstance() {
-		if(INSTANCE != null)
-			return INSTANCE;
-		else
-			return new IBOrderSenderHelper();
+		if(INSTANCE == null)
+			INSTANCE = new IBOrderSenderHelper();
+		
+		return INSTANCE;
 	}
 
 	public void requestIBCallbacks() {
@@ -165,8 +165,6 @@ public class IBOrderSenderHelper {
 
 		// place the order through IBClient
 		client.placeOrder(Integer.parseInt(order.getOrderID().getValue()), contract, ibOrder);
-
-		log.info("placed or modified order Id=" + order.getOrderID().toString());
 		log.info("placed or modified order details: " + order.toString());
 	}
 	

@@ -60,4 +60,8 @@ public class IBEventData extends EventObject{
 		return this.nextOrderId;
 	}
 	
+	public String toString() {
+		return source.toString();
+	}
+	
 }

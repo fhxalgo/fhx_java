@@ -232,7 +232,7 @@ public class IBDefaultAdapter implements EWrapper {
 
 	@Override
 	public void execDetails(int reqId, Contract contract, Execution execution) {
-		String execDetails = String.format("%d,%s,%s,%f,%d,%s,%d", 
+		String execInfo = String.format("%d,%s,%s,%f,%d,%s,%d", 
 				execution.m_clientId, 
 				execution.m_execId, 
 				execution.m_orderId, 
@@ -240,10 +240,11 @@ public class IBDefaultAdapter implements EWrapper {
 				execution.m_shares, 
 				execution.m_side, 
 				execution.m_cumQty);
-		log.info("execDetails(int reqId=" + reqId + ", Contract contract=" + contract.m_symbol + ", Execution execution=" + execDetails + ")" ); 
+		
+		log.info(execInfo); 
 		
 		// propagateToIBOrderService()
-		IBEventData data = new IBEventData("xxxx orderId=" + reqId +", execution=" +execDetails, IBEventType.ExecDetails);
+		IBEventData data = new IBEventData("xxxx orderId=" + reqId +", execution=" +execInfo, IBEventType.ExecDetails);
 		IBEventServiceImpl.getEventService().fireIBEvent(data);
 		
 		IBOrderService.getInstance().addExecOrders(execution.m_execId, execution);
@@ -276,10 +277,11 @@ public class IBDefaultAdapter implements EWrapper {
 
 	@Override
 	public void openOrder(int orderId, Contract contract, Order order, OrderState orderState) {
-		log.info("openOrder->orderId|"+orderId+"||contract|"+contract.m_symbol+"||order|"+order.m_totalQuantity+"||orderState|"+orderState.m_status); 
+		String openOrdInfo = "openOrder->orderId="+orderId+",contract="+contract.m_symbol+",order="+order.m_totalQuantity+",orderState="+orderState.m_status; 
+		log.info(openOrdInfo); 
 		
 		// propagateToIBOrderService()
-		IBEventData data = new IBEventData(order, IBEventType.OpenOrder);
+		IBEventData data = new IBEventData(openOrdInfo, IBEventType.OpenOrder);
 		IBEventServiceImpl.getEventService().fireIBEvent(data);
 		
 		// put open order detail into the map to keep track
@@ -294,10 +296,11 @@ public class IBDefaultAdapter implements EWrapper {
 	@Override
 	public void orderStatus(int orderId, String status, int filled, int remaining, double avgFillPrice, int permId, int parentId, double lastFillPrice,
 			int clientId, String whyHeld) {
-		log.info("orderStatus->orderId|"+orderId+"||status|"+status+"||filled|"+filled+"||remaining|"+remaining+"||avgFillPrice|"+avgFillPrice+
-				 "||permId|"+permId+"||parentId|"+parentId+"||lastFillPrice|"+lastFillPrice+"||clientId|"+clientId+"||whyHeld|"+whyHeld ); 
+		String ordStatusInfo = "orderStatus->orderId="+orderId+",status="+status+",filled="+filled+",remaining="+remaining+",avgFillPrice="+avgFillPrice+
+				 ",permI="+permId+",parentId="+parentId+",lastFillPrice="+lastFillPrice+",clientId="+clientId+",whyHeld="+whyHeld; 
+		log.info(ordStatusInfo); 
 		
-		IBEventData data = new IBEventData(orderId+"|"+status, IBEventType.OrderStatus);
+		IBEventData data = new IBEventData(ordStatusInfo, IBEventType.OrderStatus);
 		IBEventServiceImpl.getEventService().fireIBEvent(data);
 		
 		if(IBOrderStatus.Filled.toString().equals(status)) {
@@ -399,7 +402,14 @@ public class IBDefaultAdapter implements EWrapper {
 	public void updatePortfolio(Contract contract, int position, double marketPrice, double marketValue, double averageCost, double unrealizedPNL,
 			double realizedPNL, String accountName) {
 		// This method is called if we subscribe to account and position updates
-		log.info("Got a position update: symbol|" + contract.m_symbol + "|open qty|" + position);
+		String portInfo = String.format("contract=%s, position=%d, marketPrice=%f, marketValue=%f, avarageCost=%f, unrealizedPnl=%f, realizedPNL=%f, accountName=%s"
+				, contract, position, marketPrice, marketValue, averageCost, unrealizedPNL, realizedPNL, accountName);
+				
+		log.info(portInfo);
+		
+		IBEventData data = new IBEventData(portInfo, IBEventType.UpdatePortfolio);
+		IBEventServiceImpl.getEventService().fireIBEvent(data);
+		
 		IBOrderService.getInstance().updatePosition(contract.m_symbol, position);
 	}
 }

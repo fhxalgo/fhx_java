@@ -413,8 +413,9 @@ public class IBFeedManager implements EWrapper {
 	public void error(int id, int errorCode, String errorMsg) {
 		// TODO Auto-generated method stub
 		String symbol=getSymbolFromTickerId(id);
-		log.info(String.format("xxxx error(int id=%d, symbol=%s, int errorCode=%d, String errorMsg=%s)", id, symbol, errorCode, errorMsg));
-		System.out.println(String.format("xxxx IBFeedManager.error(int id=%d, int errorCode=%d, String errorMsg=%s)", id, errorCode, errorMsg));
+		String logMsg = String.format("xxxx error(int id=%d, symbol=%s, int errorCode=%d, String errorMsg=%s)", id, symbol, errorCode, errorMsg); 
+		log.info(logMsg);  // TODO need to find out why this is not being printed in strategyagent.log 
+		System.out.println(logMsg);
 	}
 
 	@Override
