@@ -1,7 +1,5 @@
 package com.fhx.service.ib.marketdata;
 
-import java.util.EventObject;
-
 import javax.swing.event.EventListenerList;
 
 import org.apache.log4j.LogManager;
@@ -92,14 +90,6 @@ public class IBEventServiceImpl {
         	default: 
         		break;
         }
-	}
-	
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-
 	}
 
 }

@@ -232,7 +232,7 @@ public class IBDefaultAdapter implements EWrapper {
 
 	@Override
 	public void execDetails(int reqId, Contract contract, Execution execution) {
-		String execInfo = String.format("%d,%s,%s,%f,%d,%s,%d", 
+		String execInfo = String.format("m_clientId=%d,m_execId=%s,m_orderId=%s,m_price=%f,m_shares=%d,m_side=%s,m_cumQty=%d", 
 				execution.m_clientId, 
 				execution.m_execId, 
 				execution.m_orderId, 
@@ -399,11 +399,11 @@ public class IBDefaultAdapter implements EWrapper {
 	}
 
 	@Override
-	public void updatePortfolio(Contract contract, int position, double marketPrice, double marketValue, double averageCost, double unrealizedPNL,
-			double realizedPNL, String accountName) {
+	public void updatePortfolio(Contract contract, int position, double marketPrice, double marketValue, double averageCost, 
+			double unrealizedPNL, double realizedPNL, String accountName) {
 		// This method is called if we subscribe to account and position updates
-		String portInfo = String.format("contract=%s, position=%d, marketPrice=%f, marketValue=%f, avarageCost=%f, unrealizedPnl=%f, realizedPNL=%f, accountName=%s"
-				, contract, position, marketPrice, marketValue, averageCost, unrealizedPNL, realizedPNL, accountName);
+		String portInfo = String.format("contract=%s, position=%d, marketPrice=%f, marketValue=%f, avarageCost=%f, unrealizedPnl=%f, realizedPNL=%f, accountName=%s", 
+				contract.m_symbol, position, marketPrice, marketValue, averageCost, unrealizedPNL, realizedPNL, accountName);
 				
 		log.info(portInfo);
 		

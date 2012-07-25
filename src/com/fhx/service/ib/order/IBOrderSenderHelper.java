@@ -153,6 +153,7 @@ public class IBOrderSenderHelper {
 		//set the limit price if order is a limit order or stop limit order
 		if (order.getOrderType().equals(OrderType.Limit)) {
 			ibOrder.m_lmtPrice = order.getPrice().doubleValue();
+			
 		}
 
 		//set the stop price if order is a stop order or stop limit order

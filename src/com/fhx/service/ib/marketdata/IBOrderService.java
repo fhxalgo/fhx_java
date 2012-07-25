@@ -188,7 +188,7 @@ public class IBOrderService extends IBOrderEventListener {
 			RequestIDGenerator.singleton().initializeOrderId(event.getNextOrderId());
 		}
 		
-		log.info("onIBEvent callback: event type " + event.getEventType());
+		log.info("onIBEvent callback: event type=" + event.getEventType() +", source=" + event.getSource());
 		
 		if(openOrders.size()>0)
 			printOrders(openOrders, "open ");
