@@ -106,9 +106,10 @@ public class MarketDataHandler implements Runnable {
 		    		/*
 		    		 * Collect tick data in the TickDataContainer
 		    		 */
-			    	if (tickCount.get() % 12 == 0) {
+			    	
+			    	if (tickCount.getAndIncrement() % 12 == 0) {
 			    		// log every 60 seconds
-			    		log.info("adding ticks ["+tickCount.getAndIncrement()+"] to tickDataContainer");
+			    		log.info("adding ticks ["+tickCount.get()+"] to tickDataContainer");
 			    	}
 		    		TickDataContainer.INSTANCE.addATick(ticks);
 			    }
