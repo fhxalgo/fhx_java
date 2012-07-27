@@ -2,7 +2,6 @@ package com.fhx.service.ib.marketdata;
 
 import java.io.EOFException;
 import java.net.SocketException;
-import java.util.EventObject;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Vector;
@@ -61,7 +60,8 @@ public class IBDefaultAdapter implements EWrapper {
 
 	@Override
 	public void error(int id, int code, String errorMsg) {
-		String message = "xxxx error(int id, int code, String errorMsg) client: " + this.clientId + " id: " + id + " code: " + code + " " + errorMsg.replaceAll("\n", " ");
+		String message = String.format("xxxx client: %s, error(int id=%d, int code=%d, String errorMsg=%s) "
+				, this.clientId, id, code, errorMsg);
 		
 		IBEventData data = new IBEventData(message, IBEventType.Error);
 		IBEventServiceImpl.getEventService().fireIBEvent(data);
@@ -265,10 +265,9 @@ public class IBDefaultAdapter implements EWrapper {
 
 	@Override
 	public void historicalData(int reqId, String date, double open, double high, double low, double close, int volume, int count, double wap, boolean hasGaps) {
-		
-		log.info("xxxx historicalData(reqId="+reqId+", Symbol="+requestSymbols.get(reqId)+", date="+date+",  open="+open+", close="+close+", volume="+volume+
-				 ", count="+count+", WAP="+wap+", hadGaps="+String.valueOf(hasGaps)+")");
-
+		String infoStr = String.format("historicalData(int reqId=%d, String date=%s, double open=%f, double high=%f, double low=%f, double close=%f, int volume=%d, int count=%d, double wap=%f, boolean hasGaps=%s)",
+				reqId, requestSymbols.get(reqId), date, open, close, volume, count, wap, String.valueOf(hasGaps));
+		log.info(infoStr);
 	}
 
 	@Override
@@ -296,8 +295,8 @@ public class IBDefaultAdapter implements EWrapper {
 	@Override
 	public void orderStatus(int orderId, String status, int filled, int remaining, double avgFillPrice, int permId, int parentId, double lastFillPrice,
 			int clientId, String whyHeld) {
-		String ordStatusInfo = "orderStatus->orderId="+orderId+",status="+status+",filled="+filled+",remaining="+remaining+",avgFillPrice="+avgFillPrice+
-				 ",permI="+permId+",parentId="+parentId+",lastFillPrice="+lastFillPrice+",clientId="+clientId+",whyHeld="+whyHeld; 
+		String ordStatusInfo = String.format("orderStatus->orderId=%d, status=%s, filled=%d, remaining=%d, avgFillPrice=%f, permI=%d, parentId=%d, lastFillPrice=%f, clientId=%d, whyHeld=%s", 
+				orderId, status, filled, remaining, avgFillPrice, permId, parentId, lastFillPrice, clientId, whyHeld); 
 		log.info(ordStatusInfo); 
 		
 		IBEventData data = new IBEventData(ordStatusInfo, IBEventType.OrderStatus);
@@ -350,18 +349,17 @@ public class IBDefaultAdapter implements EWrapper {
 
 	@Override
 	public void tickGeneric(int tickerId, int tickType, double value) {
-		log.info("tickGeneric->tickerId|"+tickerId+"||field|"+tickType+"||value|"+value);
+		log.info(String.format("tickGeneric(int tickerId=%d, int tickType=%d, double value=%f)", tickerId, tickType, value));
 	}
 
 	@Override
 	public void tickPrice(int tickerId, int field, double price, int canAutoExecute) {
-		log.info("tickPrice->tickerId|"+tickerId+"||field|"+field+"||price|"+price+"||canAutoExecute|"+canAutoExecute);
-				
+		log.info(String.format("tickGeneric(int tickerId=%d, int field=%d, double price=%f, int canAutoExecute=%d)", tickerId, field, price, canAutoExecute));
 	}
 
 	@Override
 	public void tickSize(int tickerId, int field, int size) {
-		log.info("tickSize->tickerId|"+tickerId+"||field|"+field+"||size|"+size);
+		log.info(String.format("tickGeneric(int tickerId=%d, int field=%d, int size=%d)", tickerId, field, size));
 	}
 
 	@Override
@@ -403,8 +401,7 @@ public class IBDefaultAdapter implements EWrapper {
 			double unrealizedPNL, double realizedPNL, String accountName) {
 		// This method is called if we subscribe to account and position updates
 		String portInfo = String.format("contract=%s, position=%d, marketPrice=%f, marketValue=%f, avarageCost=%f, unrealizedPnl=%f, realizedPNL=%f, accountName=%s", 
-				contract.m_symbol, position, marketPrice, marketValue, averageCost, unrealizedPNL, realizedPNL, accountName);
-				
+				contract.m_symbol, position, marketPrice, marketValue, averageCost, unrealizedPNL, realizedPNL, accountName);				
 		log.info(portInfo);
 		
 		IBEventData data = new IBEventData(portInfo, IBEventType.UpdatePortfolio);
