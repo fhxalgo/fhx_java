@@ -19,7 +19,7 @@ public class Test {
 
 	// test git commit 
 	
-	// test 2
+	// test 3
 	// pair model properties
 	private Map<String, IModel> pairModelParms = new ConcurrentHashMap<String, IModel>();
 	// order list
@@ -100,6 +100,7 @@ public class Test {
 				// update Position
 
 				// exit
+				System.out.println("got orders...");
 
 			}
 
