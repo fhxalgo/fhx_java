@@ -22,6 +22,7 @@ import com.fhx.service.ib.marketdata.IBClient;
 import com.fhx.service.ib.marketdata.IBOrderService;
 import com.fhx.service.ib.marketdata.IBUtil;
 import com.fhx.service.ib.marketdata.RequestIDGenerator;
+import com.fhx.util.TweeterService;
 import com.ib.client.Contract;
 import com.ib.client.Order;
 
@@ -167,6 +168,10 @@ public class IBOrderSenderHelper {
 		// place the order through IBClient
 		client.placeOrder(Integer.parseInt(order.getOrderID().getValue()), contract, ibOrder);
 		log.info("placed or modified order details: " + order.toString());
+		
+		String tweetMsg = String.format("sentOrd2IB: Id=%d %s %s %d %f", 
+				order.getOrderID().getValue(), ibOrder.m_action, contract.m_symbol, ibOrder.m_totalQuantity, ibOrder.m_lmtPrice);
+		TweeterService.INSTANCE.sendTweet(tweetMsg);
 	}
 	
 	public void cancelOrder(OrderSingle order) throws Exception {

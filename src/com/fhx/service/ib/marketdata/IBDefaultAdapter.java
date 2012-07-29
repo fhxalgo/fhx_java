@@ -10,6 +10,7 @@ import org.apache.log4j.Logger;
 
 import com.fhx.service.ib.order.IBOrderStateWrapper;
 import com.fhx.service.ib.order.IBOrderStatus;
+import com.fhx.util.TweeterService;
 import com.ib.client.Contract;
 import com.ib.client.ContractDetails;
 import com.ib.client.EWrapper;
@@ -248,6 +249,10 @@ public class IBDefaultAdapter implements EWrapper {
 		IBEventServiceImpl.getEventService().fireIBEvent(data);
 		
 		IBOrderService.getInstance().addExecOrders(execution.m_execId, execution);
+		
+		String tweetMsg = String.format("execDetails: ordId=%s execId=%s px=%f lastQty=%d side=%s cumQty=%d", 
+				execution.m_orderId, execution.m_execId, execution.m_price, execution.m_shares,	execution.m_side, execution.m_cumQty);		
+		TweeterService.INSTANCE.sendTweet(tweetMsg);
 	}
 
 	@Override
@@ -408,5 +413,10 @@ public class IBDefaultAdapter implements EWrapper {
 		IBEventServiceImpl.getEventService().fireIBEvent(data);
 		
 		IBOrderService.getInstance().updatePosition(contract.m_symbol, position);
+		
+		String tweetMsg = String.format("%s pos=%d, mktPx=%f, mktVal=%f, avgCost=%f, unrealizedPNl=%f, realizedPNL=%f", 
+				contract.m_symbol, position, marketPrice, marketValue, averageCost, unrealizedPNL, realizedPNL);				
+
+		TweeterService.INSTANCE.sendTweet(tweetMsg);
 	}
 }
