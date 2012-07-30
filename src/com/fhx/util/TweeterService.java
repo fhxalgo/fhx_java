@@ -2,10 +2,8 @@ package com.fhx.util;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.Date;
 import java.util.Properties;
 
@@ -29,11 +27,12 @@ public enum TweeterService {
     private String AccessTokenSecret;
     
 	private TweeterService() {
-		loadTweeterProperties();
-		initTweeter();
+		if (loadTweeterProperties()) {
+			initTweeter();
+		}
 	}
 	
-	private void loadTweeterProperties() {
+	private boolean loadTweeterProperties() {
         File file = new File("conf/twitter4j.properties");
         Properties prop = new Properties();
         InputStream is = null;
@@ -46,7 +45,13 @@ public enum TweeterService {
                 ConsumerSecret = prop.getProperty("oauth.consumerSecret");
                 AccessToken = prop.getProperty("oauth.accessToken");
                 AccessTokenSecret = prop.getProperty("oauth.accessTokenSecret");
-                
+
+                if (ConsumerKey.isEmpty() || ConsumerSecret.isEmpty() || AccessToken.isEmpty() || AccessTokenSecret.isEmpty()) {
+    				log.warn("OAuth adapter properties cannot be empty. TweeterService is not initalized.");
+    				return false;
+    			}
+    			log.info(String.format("setting tweeter properties: key=%s, token=%s", ConsumerKey, AccessToken));
+
             }
             else {
             	log.error("cannot find twitter4j.properties.  will not send status to tweeter.");
@@ -54,6 +59,7 @@ public enum TweeterService {
             
         } catch (IOException ioe) {
             ioe.printStackTrace();
+            return false;
         } finally {
             if (is != null) {
                 try {
@@ -62,16 +68,12 @@ public enum TweeterService {
                 }
             }
         }
+        
+        return true;
 	}
 	
-	public void initTweeter() {
+	private void initTweeter() {
 		try {
-			// OAuth properties set via adapter properties or via SBCONF references or module parameters
-			if (ConsumerKey.isEmpty() || ConsumerSecret.isEmpty() || AccessToken.isEmpty() || AccessTokenSecret.isEmpty()) {
-				log.warn("OAuth adapter properties cannot be empty.");
-			}			
-			log.info(String.format("setting tweeter properties: key=%s, token=%s", ConsumerKey, AccessToken));
-			
 			System.setProperty("twitter4j.oauth.consumerKey", ConsumerKey );
 			System.setProperty("twitter4j.oauth.consumerSecret", ConsumerSecret );
 //			System.setProperty("twitter4j.oauth.accessToken", AccessToken );
@@ -91,6 +93,10 @@ public enum TweeterService {
 	
 	public void sendTweet(String tweet) {
 		try {
+			if (this.twitter == null) {
+				log.error("tweet service is not intialized, tweet msg ["+tweet+"] is not sent.");
+			}
+			
 			twitter.updateStatus(tweet);
 			log.info("tweet-> " + tweet);
 		}
@@ -100,7 +106,7 @@ public enum TweeterService {
 	}
 	
 	public static void main(String[] args) {	
-		TweeterService.INSTANCE.sendTweet("my testing@" + new Date());
+		TweeterService.INSTANCE.sendTweet("my testing1@" + new Date());
 		
 		TweeterService.INSTANCE.sendTweet("my testing2: haha");
 	}
