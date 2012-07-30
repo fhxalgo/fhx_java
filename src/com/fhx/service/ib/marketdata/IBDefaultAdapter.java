@@ -405,7 +405,7 @@ public class IBDefaultAdapter implements EWrapper {
 	public void updatePortfolio(Contract contract, int position, double marketPrice, double marketValue, double averageCost, 
 			double unrealizedPNL, double realizedPNL, String accountName) {
 		// This method is called if we subscribe to account and position updates
-		String portInfo = String.format("contract=%s, position=%d, marketPrice=%f, marketValue=%f, avarageCost=%f, unrealizedPnl=%f, realizedPNL=%f, accountName=%s", 
+		String portInfo = String.format("contract=%s, position=%d, marketPrice=%f, marketValue=%f, avarageCost=%f, unrealizedPNl=%f, realizedPNL=%f, accountName=%s", 
 				contract.m_symbol, position, marketPrice, marketValue, averageCost, unrealizedPNL, realizedPNL, accountName);				
 		log.info(portInfo);
 		

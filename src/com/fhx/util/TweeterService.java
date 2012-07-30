@@ -41,16 +41,11 @@ public enum TweeterService {
             if (file.exists()) {
                 is = new FileInputStream(file);
                 prop.load(is);
-
-//              oauth.consumerKey=fhxalgo                
-//              oauth.consumerSecret=g0ldMAN123
-//              oauth.accessToken=721607953-vY37IUji1C86kmkKr4LCwKlkUNDRFSa44dTcUDGH
-//              oauth.accessTokenSecret=vMBskmkEAKvQyi7ncHBI2PycPwqV9MoSbLUcLseu8
                 		
-                ConsumerKey = prop.getProperty("oauth.consumerKey", "fhxalgo");
-                ConsumerSecret = prop.getProperty("oauth.consumerSecret", "g0ldMAN123");
-                AccessToken = prop.getProperty("oauth.accessToken", "721607953-vY37IUji1C86kmkKr4LCwKlkUNDRFSa44dTcUDGH");
-                AccessTokenSecret = prop.getProperty("oauth.accessTokenSecret", "vMBskmkEAKvQyi7ncHBI2PycPwqV9MoSbLUcLseu8");
+                ConsumerKey = prop.getProperty("oauth.consumerKey");
+                ConsumerSecret = prop.getProperty("oauth.consumerSecret");
+                AccessToken = prop.getProperty("oauth.accessToken");
+                AccessTokenSecret = prop.getProperty("oauth.accessTokenSecret");
                 
             }
             else {
