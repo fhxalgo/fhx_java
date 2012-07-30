@@ -414,7 +414,7 @@ public class IBDefaultAdapter implements EWrapper {
 		
 		IBOrderService.getInstance().updatePosition(contract.m_symbol, position);
 		
-		String tweetMsg = String.format("%s pos=%d, mktPx=%f, mktVal=%f, avgCost=%f, unrealizedPNl=%f, realizedPNL=%f", 
+		String tweetMsg = String.format("updatePortfolio: %s pos=%d, mktPx=%f, mktVal=%f, avgCost=%f, unrealizedPNL=%f, realizedPNL=%f", 
 				contract.m_symbol, position, marketPrice, marketValue, averageCost, unrealizedPNL, realizedPNL);				
 
 		TweeterService.INSTANCE.sendTweet(tweetMsg);

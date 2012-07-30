@@ -92,7 +92,7 @@ public enum TweeterService {
 	public void sendTweet(String tweet) {
 		try {
 			twitter.updateStatus(tweet);
-			log.info("update tweet: " + tweet);
+			log.info("tweet-> " + tweet);
 		}
 		catch(TwitterException e) {
 			e.printStackTrace();

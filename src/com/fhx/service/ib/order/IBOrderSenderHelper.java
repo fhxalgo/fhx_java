@@ -169,7 +169,7 @@ public class IBOrderSenderHelper {
 		client.placeOrder(Integer.parseInt(order.getOrderID().getValue()), contract, ibOrder);
 		log.info("placed or modified order details: " + order.toString());
 		
-		String tweetMsg = String.format("sentOrd2IB: Id=%d %s %s %d %f", 
+		String tweetMsg = String.format("sentOrd2IB: Id=%s %s %s %d %f", 
 				order.getOrderID().getValue(), ibOrder.m_action, contract.m_symbol, ibOrder.m_totalQuantity, ibOrder.m_lmtPrice);
 		TweeterService.INSTANCE.sendTweet(tweetMsg);
 	}
