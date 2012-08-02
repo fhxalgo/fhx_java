@@ -5,6 +5,7 @@ import java.net.SocketException;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Vector;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.log4j.Logger;
 
@@ -413,10 +414,16 @@ public class IBDefaultAdapter implements EWrapper {
 		IBEventServiceImpl.getEventService().fireIBEvent(data);
 		
 		IBOrderService.getInstance().updatePosition(contract.m_symbol, position);
-		
-		String tweetMsg = String.format("updatePortfolio: %s pos=%d, mktPx=%f, mktVal=%f, avgCost=%f, unrealizedPNL=%f, realizedPNL=%f", 
-				contract.m_symbol, position, marketPrice, marketValue, averageCost, unrealizedPNL, realizedPNL);				
 
-		TweeterService.INSTANCE.sendTweet(tweetMsg);
+		// only tweet when position size changes
+		if (posSize.get() != position) {
+			String tweetMsg = String.format("updatePortfolio: %s pos=%d, mktPx=%f, mktVal=%f, avgCost=%f, unrealizedPNL=%f, realizedPNL=%f", 
+					contract.m_symbol, position, marketPrice, marketValue, averageCost, unrealizedPNL, realizedPNL);					
+			TweeterService.INSTANCE.sendTweet(tweetMsg);
+			
+			posSize.set(position);
+		}
 	}
+	
+	private AtomicInteger posSize = new AtomicInteger(0);
 }
