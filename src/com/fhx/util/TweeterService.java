@@ -97,8 +97,8 @@ public enum TweeterService {
 				log.error("tweet service is not intialized, tweet msg ["+tweet+"] is not sent.");
 			}
 			
-			twitter.updateStatus(tweet);
 			log.info("tweet-> " + tweet);
+			twitter.updateStatus(tweet.substring(0, Math.max(140-1, tweet.length())));
 		}
 		catch(TwitterException e) {
 			e.printStackTrace();
