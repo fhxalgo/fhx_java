@@ -417,8 +417,8 @@ public class IBDefaultAdapter implements EWrapper {
 
 		// only tweet when position size changes
 		if (posSize.get() != position) {
-			String tweetMsg = String.format("updatePortfolio: %s pos=%d, mktPx=%f, mktVal=%f, avgCost=%f, unrealizedPNL=%f, realizedPNL=%f", 
-					contract.m_symbol, position, marketPrice, marketValue, averageCost, unrealizedPNL, realizedPNL);					
+			String tweetMsg = String.format("updatePortfolio: %s pos=%d, mktPx=%f, mktVal=%f, avgCost=%f, realizedPNL=%f, unrealizedPNL=%f", 
+					contract.m_symbol, position, marketPrice, marketValue, averageCost, realizedPNL, unrealizedPNL);					
 			TweeterService.INSTANCE.sendTweet(tweetMsg);
 			
 			posSize.set(position);

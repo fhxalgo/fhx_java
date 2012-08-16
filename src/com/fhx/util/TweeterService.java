@@ -493,12 +493,33 @@ public enum TweeterService {
 		return trendList;
 	}
 
+	public void queryTweets(String anything) {
+	    // The factory instance is re-useable and thread safe.
+	    //Twitter twitter = new TwitterFactory().getInstance();
+		try {
+		    Query query = new Query(anything);
+		    QueryResult result = client.search(query);
+		    
+		    System.out.println("hehe: " + result.getTweets().size());
+		    
+		    for (Tweet tweet : result.getTweets()) {
+		        System.out.println(tweet.getFromUser() + ":" + tweet.getText());
+		    }
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
 	public static void main(String[] args) {
-		TweeterService.INSTANCE.sendTweet("my testing1@" + new Date());
-		TweeterService.INSTANCE.sendTweet("my testing2: haha");
+		//TweeterService.INSTANCE.sendTweet("my testing1@" + new Date());
+		//TweeterService.INSTANCE.sendTweet("my testing2: haha");
 		
-		// test commands
-		TweeterService.INSTANCE.sendQuery(null, "q=fhxalgo", null, null, null, null);
+		// test query commands: http://twitter4j.org/en/code-examples.html
+		//TweeterService.INSTANCE.sendQuery(null, null, "q=fhxalgo", null, null, null);
+		System.out.println("query");
+		TweeterService.INSTANCE.queryTweets("olympics");
+		System.out.println("done");
+		TweeterService.INSTANCE.queryTweets("IBM");
 	}
 
 }
