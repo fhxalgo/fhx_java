@@ -17,6 +17,11 @@ import java.util.Properties;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
+import com.mongodb.BasicDBObject;
+import com.mongodb.DB;
+import com.mongodb.DBCollection;
+import com.mongodb.Mongo;
+
 import twitter4j.PagableResponseList;
 import twitter4j.QueryResult;
 import twitter4j.Status;
@@ -503,23 +508,78 @@ public enum TweeterService {
 		    System.out.println("hehe: " + result.getTweets().size());
 		    
 		    for (Tweet tweet : result.getTweets()) {
-		        System.out.println(tweet.getFromUser() + ":" + tweet.getText());
+		        System.out.println("" + tweet.getCreatedAt() + " #"+tweet.getFromUser() + ": " + tweet.getText());
 		    }
 		}
 		catch(Exception e) {
 			e.printStackTrace();
 		}
 	}
+	
+	public Twitter getClient() {
+		return this.client;
+	}
+	
 	public static void main(String[] args) {
 		//TweeterService.INSTANCE.sendTweet("my testing1@" + new Date());
 		//TweeterService.INSTANCE.sendTweet("my testing2: haha");
-		
 		// test query commands: http://twitter4j.org/en/code-examples.html
 		//TweeterService.INSTANCE.sendQuery(null, null, "q=fhxalgo", null, null, null);
-		System.out.println("query");
-		TweeterService.INSTANCE.queryTweets("olympics");
+		System.out.println("query......");
+		TweeterService.INSTANCE.queryTweets("iphone");
+		TweeterService.INSTANCE.queryTweets("aapl");
 		System.out.println("done");
-		TweeterService.INSTANCE.queryTweets("IBM");
+		
+		try {
+			Mongo m = new Mongo();
+			DB db = m.getDB("haha");
+			DBCollection coll = db.getCollection("retweets");
+
+			Twitter twitter = TweeterService.INSTANCE.getClient();
+			System.out.println("xxxx screen name: " + twitter.getScreenName());
+			
+			ResponseList<Trends> trendList = twitter.getDailyTrends();
+			System.out.println("xxxx # of daily trends: " + trendList.size());
+			System.out.println("xxxx trends: " + Arrays.toString(trendList.toArray()));
+			
+			for(Trends trends : trendList) {
+				System.out.print("xxxx location: " + trends.getLocation());
+				System.out.println(", date: " + trends.getTrendAt());
+				
+				Trend[] tdList = trends.getTrends();
+				
+				for (Trend td : tdList) {
+					System.out.print("haha: name=" + td.getName() + ", query=" + td.getQuery() + ", url=" + td.getUrl());
+					
+					BasicDBObject doc = new BasicDBObject();
+					doc.put("name", td.getName());
+					//doc.put("query", td.getQuery());
+					//doc.put("url", td.getUrl());
+					coll.insert(doc);
+				}
+				System.out.println();
+			}
+			
+			List<Status> statuses = twitter.getRetweetsOfMe();
+			System.out.println("xxxx statuses: " + Arrays.toString(statuses.toArray()));
+			
+			for (Status status : statuses) { 
+				ResponseList<User> users = twitter.getRetweetedBy(status.getId());
+				
+				for (User user : users) {
+					BasicDBObject doc = new BasicDBObject();
+					doc.put("user_name", user.getScreenName());
+					doc.put("tweet", status.getText());
+					doc.put("tweet_id", status.getId());
+					doc.put("date", status.getCreatedAt());
+					coll.insert(doc);
+				}
+			}
+
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 }

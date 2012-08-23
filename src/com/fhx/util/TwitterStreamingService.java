@@ -4,15 +4,22 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Properties;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
+import com.mongodb.BasicDBObject;
+import com.mongodb.DB;
+import com.mongodb.DBCollection;
+import com.mongodb.Mongo;
+
 import twitter4j.Status;
 import twitter4j.StatusAdapter;
 import twitter4j.StatusDeletionNotice;
 import twitter4j.StatusListener;
+import twitter4j.Twitter;
 import twitter4j.TwitterStream;
 import twitter4j.TwitterStreamFactory;
 import twitter4j.auth.AccessToken;
@@ -89,11 +96,23 @@ public final class TwitterStreamingService extends StatusAdapter {
 			AccessToken oathAccessToken = new AccessToken(AccessToken, AccessTokenSecret);
 			this.twitterStream.setOAuthAccessToken(oathAccessToken);
 			
+	    	// Mongo db service
+			Mongo m = new Mongo();
+			DB db = m.getDB("twitter_streaming");
+			final DBCollection coll = db.getCollection("tweets");
+
 	        //TwitterStream twitterStream = new TwitterStreamFactory().getInstance();
 	        StatusListener listener = new StatusListener() {
 	            @Override
 	            public void onStatus(Status status) {
-	                System.out.println("#" + status.getUser().getScreenName() + " - " + status.getText() + " @T " + status.getCreatedAt());	                
+	                System.out.println("#" + status.getUser().getScreenName() + " - " + status.getText() + " @T " + status.getCreatedAt());
+	        	    BasicDBObject doc = new BasicDBObject();
+	        	    doc.put("user_name",status.getUser().getScreenName());
+	        	    doc.put("tweet", status.getText());
+	        	    doc.put("tweet_id", status.getId());
+	        	    doc.put("date", status.getCreatedAt());
+	        	    
+	        	    coll.insert(doc);
 	            }
 
 	            @Override
@@ -130,14 +149,25 @@ public final class TwitterStreamingService extends StatusAdapter {
 			e.printStackTrace();
 		}
 	}
+	
+	public TwitterStream getClient() {
+		return this.twitterStream;
+	}
     /**
      * Main entry of this application.
      *
      * @param args
      */
     public static void main(String[] args) throws TwitterException {
-    	// init anth
-    	new TwitterStreamingService();
-    	System.out.println("Service started.");
+    	try {
+
+	    	// start streaming service
+	    	new TwitterStreamingService();
+	    	System.out.println("Service started.");
+    	
+    	}
+    	catch(Exception e) {
+    		e.printStackTrace();
+    	}
     }
 }
