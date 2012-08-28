@@ -98,19 +98,60 @@ public final class TwitterStreamingService extends StatusAdapter {
 			
 	    	// Mongo db service
 			Mongo m = new Mongo();
-			DB db = m.getDB("twitter_streaming");
-			final DBCollection coll = db.getCollection("tweets");
+			DB db = m.getDB("test");
+			final DBCollection coll = db.getCollection("retweets");
 
 	        //TwitterStream twitterStream = new TwitterStreamFactory().getInstance();
 	        StatusListener listener = new StatusListener() {
 	            @Override
 	            public void onStatus(Status status) {
-	                System.out.println("#" + status.getUser().getScreenName() + " - " + status.getText() + " @T " + status.getCreatedAt());
+	            	
+	            	/*status=StatusJSONImpl{
+	            		createdAt=Mon Aug 27 22:57:03 EDT 2012, 
+	            		id=240281815385010178, 
+	            		text='@jennyXwho hey, a laugh is how I get out of bed in the morning, either that or one of my dogs Dutch ovens me the fuckers....but I digress.', 
+	            		source='<a href="http://twitter.com/download/iphone" 
+	            		rel="nofollow">Twitter for iPhone</a>', 
+	            		isTruncated=false, 
+	            		inReplyToStatusId=240281092463140864, 
+	            		inReplyToUserId=245517480, 
+	            		isFavorited=false, 
+	            		inReplyToScreenName='jennyXwho', 
+	            		geoLocation=null, 
+	            		place=null, 
+	            		retweetCount=0, 
+	            		wasRetweetedByMe=false, 
+	            		contributors=null, 
+	            		annotations=null, 
+	            		retweetedStatus=null, 
+	            		userMentionEntities=[UserMentionEntityJSONImpl{start=0, end=10, name='Jenny', screenName='jennyXwho', id=245517480}], 
+	            		urlEntities=[], 
+	            		hashtagEntities=[], 
+		            	user=UserJSONImpl{id=36058674, name='Roy Husson', screenName='Rhusson', location='', description='Fuckmonkey!', 
+		            		isContributorsEnabled=false, 
+		            		profileImageUrl='http://a0.twimg.com/profile_images/2550715021/image_normal.jpg', 
+		            		profileImageUrlHttps='https://si0.twimg.com/profile_images/2550715021/image_normal.jpg', 
+		            		url='null', isProtected=false, followersCount=245, status=null, profileBackgroundColor='C0DEED', 
+		            		profileTextColor='333333', profileLinkColor='0084B4', profileSidebarFillColor='DDEEF6', 
+		            		profileSidebarBorderColor='C0DEED', profileUseBackgroundImage=true, showAllInlineMedia=false, friendsCount=517, 
+		            		createdAt=Tue Apr 28 09:04:06 EDT 2009, favouritesCount=856, utcOffset=-18000, 
+		            		timeZone='Eastern Time (US & Canada)', 
+		            		profileBackgroundImageUrl='http://a0.twimg.com/images/themes/theme1/bg.png', 
+		            		profileBackgroundImageUrlHttps='https://si0.twimg.com/images/themes/theme1/bg.png', 
+		            		profileBackgroundTiled=false, lang='en', statusesCount=3113, isGeoEnabled=false, isVerified=false, translator=false, listedCount=2, isFollowRequestSent=false
+		            		}
+		            	}*/	            	
+	            	//System.out.println("HEHE: status=" +status + ", source=" + status.getSource() + ", rtcount=" + status.getRetweetCount());
+	                System.out.println("#" + status.getUser().getScreenName() + " - " + status.getText() + " @T " + status.getCreatedAt());	                
+	                
+	                // dispatch to a Queue
 	        	    BasicDBObject doc = new BasicDBObject();
 	        	    doc.put("user_name",status.getUser().getScreenName());
 	        	    doc.put("tweet", status.getText());
 	        	    doc.put("tweet_id", status.getId());
 	        	    doc.put("date", status.getCreatedAt());
+	        	    //doc.put("location", status.getGeoLocation() == null ? "xx" : status.getGeoLocation());
+	        	    doc.put("location", status.getPlace() == null ? "xx" : status.getPlace().getName());
 	        	    
 	        	    coll.insert(doc);
 	            }
