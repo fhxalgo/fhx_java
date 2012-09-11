@@ -1,10 +1,14 @@
 restart all - in case server needs to be rebooted.  Should put 1~5 into a script.
 
-1. start x11vnc server: root@hfxalgo:/root/bin/x11vnc_start
+0. ssh setting: 7900, localhost:5900
+
+1. start x11vnc server: root@hfxalgo:/root/bin/x11vnc_login 
 
 2. start MySql server: root@hfxalgo:/etc/init.d/mysql.server start
 
 3. start IB gateway as root: root@hfxalgo:/home/hfxdev/IBJts/run.sh
+
+fhxal491, pap3rdev
 
 Note: 1,2,3 need to run as root
 
